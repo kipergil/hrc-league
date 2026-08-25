@@ -118,6 +118,13 @@
     background:var(--court);
     border-color:var(--court);
   }
+  .pill.player.active{
+    background:var(--court);
+    border-color:var(--court);
+    color:var(--white);
+  }
+  .picker-section{margin-top:18px;padding-top:16px;border-top:1px dashed var(--line);}
+  .picker-section.hidden{display:none;}
 
   .summary{
     margin-top:14px;
@@ -249,6 +256,37 @@
     color:var(--muted);
     line-height:1.4;
   }
+  .agenda-playerlist{
+    margin-top:8px;
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:6px;
+  }
+  .players-label{
+    font-family:'Space Mono','SF Mono',SFMono-Regular,Consolas,'Courier New',monospace;
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--court);
+  }
+  .player-chip{
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    font-size:12.5px;
+    font-weight:700;
+    color:var(--court-dark);
+    background:#EAF4EF;
+    border:1px solid rgba(31,92,70,0.28);
+    border-radius:999px;
+    padding:3px 10px;
+    line-height:1.35;
+  }
+  .player-chip.me{
+    background:var(--court);
+    border-color:var(--court);
+    color:var(--white);
+  }
   .agenda-row.highlight{background:var(--cream);border-radius:10px;margin:0 -8px;padding:14px 8px;}
   .agenda-row.dim{opacity:0.4;}
 
@@ -337,6 +375,10 @@
       <div class="picker-card">
         <div class="picker-label">Which team?</div>
         <div class="pill-row" id="pillRow"></div>
+        <div class="picker-section" id="playerSection">
+          <div class="picker-label">Which player?</div>
+          <div class="pill-row" id="playerRow"></div>
+        </div>
         <div class="summary" id="summary">Showing all fixtures for all four HRC teams. Tap a team above to filter.</div>
       </div>
     </div>
@@ -456,6 +498,7 @@ const months = [
 ];
 
 const TEAM_STORAGE_KEY = 'hrc-teams-selected-team';
+const PLAYER_STORAGE_KEY = 'hrc-teams-selected-player';
 
 function loadSavedTeam(){
   try {
@@ -475,7 +518,41 @@ function saveSelectedTeam(team){
   }
 }
 
+function allPlayers(){
+  const set = new Set();
+  matches.forEach(m => (m.players||[]).forEach(p => set.add(p)));
+  return [...set].sort((a,b) => a.localeCompare(b));
+}
+
+// Player options come from whatever the team filter currently leaves visible.
+function availablePlayers(){
+  const set = new Set();
+  matches
+    .filter(m => !selected || m.team === selected)
+    .forEach(m => (m.players||[]).forEach(p => set.add(p)));
+  return [...set].sort((a,b) => a.localeCompare(b));
+}
+
+function loadSavedPlayer(){
+  try {
+    const saved = localStorage.getItem(PLAYER_STORAGE_KEY);
+    return allPlayers().includes(saved) ? saved : null;
+  } catch(e) {
+    return null;
+  }
+}
+
+function saveSelectedPlayer(player){
+  try {
+    if(player) localStorage.setItem(PLAYER_STORAGE_KEY, player);
+    else localStorage.removeItem(PLAYER_STORAGE_KEY);
+  } catch(e) {
+    // storage unavailable (private browsing, etc.) — filter still works, just isn't remembered
+  }
+}
+
 let selected = loadSavedTeam(); // null = everyone
+let selectedPlayer = loadSavedPlayer(); // null = every player
 const monthOpenState = {}; // "year-month" -> bool, persists across re-renders
 
 function isMonthDefaultOpen(year, month){
@@ -490,16 +567,24 @@ function todayISO(){
 
 const today = todayISO();
 
-function upcomingFor(team){
-  const leagueRows = matches.filter(m => !team || m.team === team);
-  const combined = [...leagueRows, ...cupRounds];
-  return combined
+// League rows currently in view: team filter first, then player. A player filter
+// hides matches with no published player list — we can't tell if they're in those.
+function visibleLeagueMatches(){
+  return matches
+    .filter(m => !selected || m.team === selected)
+    .filter(m => !selectedPlayer || (m.players && m.players.includes(selectedPlayer)));
+}
+
+function upcomingFixture(){
+  return [...visibleLeagueMatches(), ...cupRounds]
     .filter(m => m.date >= today)
     .sort((a,b) => a.date.localeCompare(b.date))[0] || null;
 }
 
 function buildPills(){
   const row = document.getElementById('pillRow');
+  row.innerHTML = '';
+
   const everyone = document.createElement('button');
   everyone.className = 'pill everyone active';
   everyone.textContent = 'Everyone';
@@ -509,14 +594,49 @@ function buildPills(){
   teams.forEach(name => {
     const b = document.createElement('button');
     b.className = 'pill';
+    b.dataset.team = name;
     b.textContent = name;
     b.onclick = () => { selected = name; saveSelectedTeam(selected); render(); };
     row.appendChild(b);
   });
 }
 
+function buildPlayerPills(){
+  const section = document.getElementById('playerSection');
+  const row = document.getElementById('playerRow');
+  const players = availablePlayers();
+
+  row.innerHTML = '';
+  if(players.length === 0){
+    section.classList.add('hidden');
+    return;
+  }
+  section.classList.remove('hidden');
+
+  const anyone = document.createElement('button');
+  anyone.className = 'pill player' + (selectedPlayer ? '' : ' active');
+  anyone.textContent = 'Everyone';
+  anyone.onclick = () => { selectedPlayer = null; saveSelectedPlayer(selectedPlayer); render(); };
+  row.appendChild(anyone);
+
+  players.forEach(name => {
+    const b = document.createElement('button');
+    b.className = 'pill player' + (name === selectedPlayer ? ' active' : '');
+    b.textContent = name;
+    b.onclick = () => { selectedPlayer = name; saveSelectedPlayer(selectedPlayer); render(); };
+    row.appendChild(b);
+  });
+}
+
 function renderSummary(){
   const el = document.getElementById('summary');
+  if(selectedPlayer){
+    const rows = visibleLeagueMatches();
+    const playerTeams = [...new Set(rows.map(m => m.team))];
+    const scope = playerTeams.length === 1 ? ` for <strong>${playerTeams[0]}</strong>` : '';
+    el.innerHTML = `<strong>${selectedPlayer}</strong> is down to play <strong>${rows.length}</strong> league match${rows.length!==1?'es':''}${scope}, plus the ${cupRounds.length} shared cup rounds. Matches without a published player list are hidden.`;
+    return;
+  }
   if(!selected){
     const total = matches.length + cupRounds.length;
     el.innerHTML = `Showing all <strong>${total}</strong> fixtures for all four HRC teams (${matches.length} league matches, ${cupRounds.length} shared cup rounds). Tap a team above to filter.`;
@@ -533,14 +653,21 @@ function formatDate(iso){
 }
 
 function render(){
-  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
-  if(!selected){
-    document.querySelector('.pill.everyone').classList.add('active');
-  } else {
-    [...document.querySelectorAll('.pill')].forEach(p=>{
-      if(p.textContent === selected) p.classList.add('active');
-    });
+  // A saved player may not belong to the team now in view — drop the filter then.
+  if(selectedPlayer && !availablePlayers().includes(selectedPlayer)){
+    selectedPlayer = null;
+    saveSelectedPlayer(selectedPlayer);
   }
+
+  document.querySelectorAll('#pillRow .pill').forEach(p => p.classList.remove('active'));
+  if(!selected){
+    document.querySelector('#pillRow .pill.everyone').classList.add('active');
+  } else {
+    const active = document.querySelector(`#pillRow .pill[data-team="${selected}"]`);
+    if(active) active.classList.add('active');
+  }
+
+  buildPlayerPills();
   renderSummary();
   renderMonths();
 }
@@ -548,7 +675,7 @@ function render(){
 function renderMonths(){
   const container = document.getElementById('months');
   container.innerHTML = '';
-  const upcomingMatch = upcomingFor(selected);
+  const upcomingMatch = upcomingFixture();
 
   months.forEach(({year,month,label}) => {
     const key = `${year}-${month}`;
@@ -564,8 +691,7 @@ function renderMonths(){
       const d = new Date(dateStr+"T00:00:00");
       return d.getFullYear() === year && d.getMonth() === month;
     };
-    const leagueRows = matches
-      .filter(m => !selected || m.team === selected)
+    const leagueRows = visibleLeagueMatches()
       .filter(m => inMonth(m.date))
       .map(m => ({ kind:'league', ...m }));
     const cupRows = cupRounds
@@ -586,17 +712,23 @@ function renderMonths(){
         const d = new Date(m.date+"T00:00:00");
         const dayNum = d.getDate();
         const dowLabel = d.toLocaleDateString('en-GB',{weekday:'short'});
-        const isMine = selected && m.kind === 'league' && m.team === selected;
-        const isOtherSelected = selected && m.kind === 'league' && !isMine;
+        const isMine = m.kind === 'league' && (!!selectedPlayer || (selected && m.team === selected));
+        const isOtherSelected = selected && m.kind === 'league' && m.team !== selected;
         const isUpcoming = upcomingMatch && m.date === upcomingMatch.date &&
           (m.kind === 'cup' ? !upcomingMatch.team : m.team === upcomingMatch.team);
 
-        let matchupHtml, badgeHtml, noteHtml;
+        let matchupHtml, badgeHtml, noteHtml, playersHtml = '';
         if(m.kind === 'league'){
           const [homeTeam, awayTeam] = m.ha === 'Home' ? [m.team, m.opponent] : [m.opponent, m.team];
           matchupHtml = `${homeTeam} <span class="agenda-vs">vs</span> ${awayTeam}`;
           badgeHtml = `<span class="agenda-ha ${m.ha.toLowerCase()}">${m.ha}</span>`;
-          noteHtml = m.players ? `<span class="agenda-note">Playing: ${m.players.join(', ')}</span>` : '';
+          noteHtml = '';
+          if(m.players){
+            const chips = m.players
+              .map(p => `<span class="player-chip${p === selectedPlayer ? ' me' : ''}">${p}</span>`)
+              .join('');
+            playersHtml = `<div class="agenda-playerlist"><span class="players-label">Playing</span>${chips}</div>`;
+          }
         } else {
           matchupHtml = `${m.cupType} Cup`;
           badgeHtml = `<span class="agenda-ha cup">Cup</span>`;
@@ -619,6 +751,7 @@ function renderMonths(){
               <span class="agenda-team">${matchupHtml}</span>
               ${badgeHtml}
             </div>
+            ${playersHtml}
             ${noteHtml ? `<div class="agenda-players">${noteHtml}</div>` : ''}
           </div>
         `;
