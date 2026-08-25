@@ -83,6 +83,7 @@
     box-shadow:0 12px 24px -14px rgba(18,61,46,0.35);
   }
   .picker-label{
+    display:block;
     font-family:'Space Mono','SF Mono',SFMono-Regular,Consolas,'Courier New',monospace;
     font-size:11px;
     letter-spacing:0.18em;
@@ -118,11 +119,38 @@
     background:var(--court);
     border-color:var(--court);
   }
-  .pill.player.active{
-    background:var(--court);
+  .player-select{
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    font-weight:600;
+    font-size:14px;
+    line-height:1.2;
+    padding:10px 40px 10px 14px;
+    border-radius:12px;
+    border:1.5px solid var(--line);
+    color:var(--ink);
+    cursor:pointer;
+    min-width:240px;
+    max-width:100%;
+    -webkit-appearance:none;
+    -moz-appearance:none;
+    appearance:none;
+    background-color:var(--cream);
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%231A2233' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;
+    background-position:right 14px center;
+    background-size:11px 8px;
+    transition:background-color .15s ease, border-color .15s ease, color .15s ease;
+  }
+  .player-select:hover{border-color:var(--ball);}
+  .player-select:focus-visible{outline:2px solid var(--ball);outline-offset:2px;}
+  .player-select.filtered{
+    background-color:var(--court);
     border-color:var(--court);
     color:var(--white);
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   }
+  /* the open menu keeps the plain palette even when the closed control is green */
+  .player-select option{background:var(--white);color:var(--ink);}
   .picker-section{margin-top:18px;padding-top:16px;border-top:1px dashed var(--line);}
   .picker-section.hidden{display:none;}
 
@@ -376,8 +404,8 @@
         <div class="picker-label">Which team?</div>
         <div class="pill-row" id="pillRow"></div>
         <div class="picker-section" id="playerSection">
-          <div class="picker-label">Which player?</div>
-          <div class="pill-row" id="playerRow"></div>
+          <label class="picker-label" for="playerSelect">Which player?</label>
+          <select class="player-select" id="playerSelect"></select>
         </div>
         <div class="summary" id="summary">Showing all fixtures for all four HRC teams. Tap a team above to filter.</div>
       </div>
@@ -601,30 +629,35 @@ function buildPills(){
   });
 }
 
-function buildPlayerPills(){
+// A dropdown rather than a pill row: the roster grows, the control doesn't.
+function buildPlayerSelect(){
   const section = document.getElementById('playerSection');
-  const row = document.getElementById('playerRow');
+  const select = document.getElementById('playerSelect');
   const players = availablePlayers();
 
-  row.innerHTML = '';
+  select.innerHTML = '';
   if(players.length === 0){
     section.classList.add('hidden');
     return;
   }
   section.classList.remove('hidden');
 
-  const anyone = document.createElement('button');
-  anyone.className = 'pill player' + (selectedPlayer ? '' : ' active');
-  anyone.textContent = 'Everyone';
-  anyone.onclick = () => { selectedPlayer = null; saveSelectedPlayer(selectedPlayer); render(); };
-  row.appendChild(anyone);
+  ['', ...players].forEach(name => {
+    const o = document.createElement('option');
+    o.value = name;
+    o.textContent = name || 'Everyone';
+    select.appendChild(o);
+  });
 
-  players.forEach(name => {
-    const b = document.createElement('button');
-    b.className = 'pill player' + (name === selectedPlayer ? ' active' : '');
-    b.textContent = name;
-    b.onclick = () => { selectedPlayer = name; saveSelectedPlayer(selectedPlayer); render(); };
-    row.appendChild(b);
+  select.value = selectedPlayer || '';
+  select.classList.toggle('filtered', !!selectedPlayer);
+}
+
+function bindPlayerSelect(){
+  document.getElementById('playerSelect').addEventListener('change', e => {
+    selectedPlayer = e.target.value || null;
+    saveSelectedPlayer(selectedPlayer);
+    render();
   });
 }
 
@@ -667,7 +700,7 @@ function render(){
     if(active) active.classList.add('active');
   }
 
-  buildPlayerPills();
+  buildPlayerSelect();
   renderSummary();
   renderMonths();
 }
@@ -764,6 +797,7 @@ function renderMonths(){
 }
 
 buildPills();
+bindPlayerSelect();
 render();
 </script>
 </body>
