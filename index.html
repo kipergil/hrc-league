@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HRC Teams Calendar — Hertford &amp; District League</title>
+<title>HRC League Calendar — Hertford &amp; District League</title>
 <style>
   :root{
     --cream:#FBF6EC;
@@ -66,6 +66,43 @@
     color:rgba(251,246,236,0.75);
     max-width:520px;
     margin:0;
+  }
+
+  .howto{
+    list-style:none;
+    counter-reset:howto;
+    margin:16px 0 0;
+    padding:0;
+    max-width:520px;
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+  }
+  .howto li{
+    counter-increment:howto;
+    position:relative;
+    padding-left:28px;
+    font-family:'Space Mono','SF Mono',SFMono-Regular,Consolas,'Courier New',monospace;
+    font-size:12.5px;
+    line-height:1.45;
+    color:rgba(251,246,236,0.72);
+  }
+  .howto li::before{
+    content:counter(howto);
+    position:absolute;
+    left:0;
+    top:1px;
+    width:18px;
+    height:18px;
+    border-radius:50%;
+    background:rgba(255,106,43,0.18);
+    border:1px solid var(--ball);
+    color:var(--ball);
+    font-size:10px;
+    font-weight:700;
+    display:flex;
+    align-items:center;
+    justify-content:center;
   }
 
   .wrap{max-width:1080px;margin:0 auto;padding:0 20px;}
@@ -393,8 +430,13 @@
   <div class="hero">
     <div class="wrap" style="padding:0;">
       <div class="eyebrow">Hertford &amp; District Table Tennis League</div>
-      <h1>HRC Teams Calendar</h1>
-      <p>Every HRC A, HRC B, HRC C and HRC D fixture across the Premier, Division One and Division Two 2026-27 seasons — league matches, plus Divisional, Handicap and Finals cup rounds — from September 2026 through April 2027.</p>
+      <h1>HRC League Calendar</h1>
+      <p>All HRC A&ndash;D fixtures, September 2026 to April 2027.</p>
+      <ol class="howto">
+        <li>Pick your team, then your name.</li>
+        <li>You&rsquo;ll get your matches, plus any fixture with no line-up announced yet.</li>
+        <li>Your choice is remembered next time you visit.</li>
+      </ol>
     </div>
   </div>
 
@@ -407,7 +449,7 @@
           <label class="picker-label" for="playerSelect">Which player?</label>
           <select class="player-select" id="playerSelect"></select>
         </div>
-        <div class="summary" id="summary">Showing all fixtures for all four HRC teams. Tap a team above to filter.</div>
+        <div class="summary" id="summary">Showing all fixtures for all four HRC teams.</div>
       </div>
     </div>
 
@@ -595,12 +637,26 @@ function todayISO(){
 
 const today = todayISO();
 
-// League rows currently in view: team filter first, then player. A player filter
-// hides matches with no published player list — we can't tell if they're in those.
+// Teams a player filter applies to: the selected team, or — when no team is
+// picked — every team that player actually turns out for.
+function teamsPlayedFor(player){
+  return [...new Set(matches.filter(m => (m.players||[]).includes(player)).map(m => m.team))];
+}
+
+// League rows currently in view: team filter first, then player. Matches with no
+// published line-up stay in view — nobody has been picked for them yet, so this
+// player may well end up in them. Only matches naming someone else drop out.
 function visibleLeagueMatches(){
-  return matches
-    .filter(m => !selected || m.team === selected)
-    .filter(m => !selectedPlayer || (m.players && m.players.includes(selectedPlayer)));
+  const byTeam = matches.filter(m => !selected || m.team === selected);
+  if(!selectedPlayer) return byTeam;
+
+  const scope = selected ? [selected] : teamsPlayedFor(selectedPlayer);
+  return byTeam.filter(m => scope.includes(m.team) &&
+    (!m.players || m.players.includes(selectedPlayer)));
+}
+
+function isPlayingIn(m){
+  return !!selectedPlayer && !!m.players && m.players.includes(selectedPlayer);
 }
 
 function upcomingFixture(){
@@ -665,14 +721,17 @@ function renderSummary(){
   const el = document.getElementById('summary');
   if(selectedPlayer){
     const rows = visibleLeagueMatches();
+    const named = rows.filter(isPlayingIn).length;
+    const tbc = rows.length - named;
     const playerTeams = [...new Set(rows.map(m => m.team))];
     const scope = playerTeams.length === 1 ? ` for <strong>${playerTeams[0]}</strong>` : '';
-    el.innerHTML = `<strong>${selectedPlayer}</strong> is down to play <strong>${rows.length}</strong> league match${rows.length!==1?'es':''}${scope}, plus the ${cupRounds.length} shared cup rounds. Matches without a published player list are hidden.`;
+    const tbcText = tbc ? `, plus <strong>${tbc}</strong> with no line-up announced yet` : '';
+    el.innerHTML = `<strong>${selectedPlayer}</strong> is named in <strong>${named}</strong> league match${named!==1?'es':''}${scope}${tbcText}, and the ${cupRounds.length} shared cup rounds.`;
     return;
   }
   if(!selected){
     const total = matches.length + cupRounds.length;
-    el.innerHTML = `Showing all <strong>${total}</strong> fixtures for all four HRC teams (${matches.length} league matches, ${cupRounds.length} shared cup rounds). Tap a team above to filter.`;
+    el.innerHTML = `Showing all <strong>${total}</strong> fixtures for all four HRC teams (${matches.length} league matches, ${cupRounds.length} shared cup rounds).`;
     return;
   }
   const leagueCount = matches.filter(m => m.team === selected).length;
@@ -745,7 +804,8 @@ function renderMonths(){
         const d = new Date(m.date+"T00:00:00");
         const dayNum = d.getDate();
         const dowLabel = d.toLocaleDateString('en-GB',{weekday:'short'});
-        const isMine = m.kind === 'league' && (!!selectedPlayer || (selected && m.team === selected));
+        const isMine = m.kind === 'league' &&
+          (selectedPlayer ? isPlayingIn(m) : (selected && m.team === selected));
         const isOtherSelected = selected && m.kind === 'league' && m.team !== selected;
         const isUpcoming = upcomingMatch && m.date === upcomingMatch.date &&
           (m.kind === 'cup' ? !upcomingMatch.team : m.team === upcomingMatch.team);
@@ -761,6 +821,8 @@ function renderMonths(){
               .map(p => `<span class="player-chip${p === selectedPlayer ? ' me' : ''}">${p}</span>`)
               .join('');
             playersHtml = `<div class="agenda-playerlist"><span class="players-label">Playing</span>${chips}</div>`;
+          } else if(selectedPlayer){
+            noteHtml = `<span class="agenda-note">Line-up not announced yet</span>`;
           }
         } else {
           matchupHtml = `${m.cupType} Cup`;
