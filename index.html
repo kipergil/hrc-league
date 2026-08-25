@@ -595,12 +595,26 @@ function todayISO(){
 
 const today = todayISO();
 
-// League rows currently in view: team filter first, then player. A player filter
-// hides matches with no published player list — we can't tell if they're in those.
+// Teams a player filter applies to: the selected team, or — when no team is
+// picked — every team that player actually turns out for.
+function teamsPlayedFor(player){
+  return [...new Set(matches.filter(m => (m.players||[]).includes(player)).map(m => m.team))];
+}
+
+// League rows currently in view: team filter first, then player. Matches with no
+// published line-up stay in view — nobody has been picked for them yet, so this
+// player may well end up in them. Only matches naming someone else drop out.
 function visibleLeagueMatches(){
-  return matches
-    .filter(m => !selected || m.team === selected)
-    .filter(m => !selectedPlayer || (m.players && m.players.includes(selectedPlayer)));
+  const byTeam = matches.filter(m => !selected || m.team === selected);
+  if(!selectedPlayer) return byTeam;
+
+  const scope = selected ? [selected] : teamsPlayedFor(selectedPlayer);
+  return byTeam.filter(m => scope.includes(m.team) &&
+    (!m.players || m.players.includes(selectedPlayer)));
+}
+
+function isPlayingIn(m){
+  return !!selectedPlayer && !!m.players && m.players.includes(selectedPlayer);
 }
 
 function upcomingFixture(){
@@ -665,9 +679,12 @@ function renderSummary(){
   const el = document.getElementById('summary');
   if(selectedPlayer){
     const rows = visibleLeagueMatches();
+    const named = rows.filter(isPlayingIn).length;
+    const tbc = rows.length - named;
     const playerTeams = [...new Set(rows.map(m => m.team))];
     const scope = playerTeams.length === 1 ? ` for <strong>${playerTeams[0]}</strong>` : '';
-    el.innerHTML = `<strong>${selectedPlayer}</strong> is down to play <strong>${rows.length}</strong> league match${rows.length!==1?'es':''}${scope}, plus the ${cupRounds.length} shared cup rounds. Matches without a published player list are hidden.`;
+    const tbcText = tbc ? `, plus <strong>${tbc}</strong> with no line-up announced yet` : '';
+    el.innerHTML = `<strong>${selectedPlayer}</strong> is named in <strong>${named}</strong> league match${named!==1?'es':''}${scope}${tbcText}, and the ${cupRounds.length} shared cup rounds.`;
     return;
   }
   if(!selected){
@@ -745,7 +762,8 @@ function renderMonths(){
         const d = new Date(m.date+"T00:00:00");
         const dayNum = d.getDate();
         const dowLabel = d.toLocaleDateString('en-GB',{weekday:'short'});
-        const isMine = m.kind === 'league' && (!!selectedPlayer || (selected && m.team === selected));
+        const isMine = m.kind === 'league' &&
+          (selectedPlayer ? isPlayingIn(m) : (selected && m.team === selected));
         const isOtherSelected = selected && m.kind === 'league' && m.team !== selected;
         const isUpcoming = upcomingMatch && m.date === upcomingMatch.date &&
           (m.kind === 'cup' ? !upcomingMatch.team : m.team === upcomingMatch.team);
@@ -761,6 +779,8 @@ function renderMonths(){
               .map(p => `<span class="player-chip${p === selectedPlayer ? ' me' : ''}">${p}</span>`)
               .join('');
             playersHtml = `<div class="agenda-playerlist"><span class="players-label">Playing</span>${chips}</div>`;
+          } else if(selectedPlayer){
+            noteHtml = `<span class="agenda-note">Line-up not announced yet</span>`;
           }
         } else {
           matchupHtml = `${m.cupType} Cup`;
