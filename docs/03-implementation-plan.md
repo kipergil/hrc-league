@@ -6,6 +6,8 @@ Companion to [01-prd.md](01-prd.md) and [02-data-model.md](02-data-model.md).
 
 **Indicative duration:** ~18 weeks to full cutover, with a usable public site live in beta at week 9.
 
+**Scope confirmed 26 Aug 2026:** all six phases are in scope. The lean alternative at the foot of this document is recorded for reference but is **not** being taken. Hosting is Directus Cloud; a full database export is available; the design direction is "new look, same map".
+
 ---
 
 ## Phase 0 — Discovery and setup (2 weeks)
@@ -15,15 +17,16 @@ Companion to [01-prd.md](01-prd.md) and [02-data-model.md](02-data-model.md).
 | # | Deliverable |
 |---|---|
 | 0.1 | Access secured: existing Plesk/IIS hosting, the ASP database, DNS/registrar, the domain, the email addresses |
-| 0.2 | Database assessment — schema documented, or a decision to fall back to HTML scraping (see Q1) |
-| 0.3 | Committee workshop: walk the audit findings, agree goals, sign off the open questions in [04-open-questions.md](04-open-questions.md) |
-| 0.4 | Three captains and three players aged 60+ recruited as a standing test panel |
-| 0.5 | Hosting decision (managed vs self‑hosted) and accounts created |
-| 0.6 | Repository, CI skeleton, local Docker Compose (Directus + Postgres) |
-| 0.7 | Baseline measurement of the current site — Lighthouse, axe, page weight, traffic if analytics exist — so improvement is provable |
-| 0.8 | Brand direction: keep the league identity, rebuilt for legibility (see Q4) |
+| 0.2 | **Database export obtained and its schema documented** — every table, column and relationship, mapped field by field onto [02-data-model.md](02-data-model.md). This is the gate on Phase 5's ETL and must be finished here, not deferred |
+| 0.3 | Reconciliation baseline: the audit's scraper re‑run and stored, so migrated data can be checked against what the public pages currently display |
+| 0.4 | Committee workshop: walk the audit findings, agree goals, sign off the remaining open questions in [04-open-questions.md](04-open-questions.md) |
+| 0.5 | Three captains and three players aged 60+ recruited as a standing test panel |
+| 0.6 | Directus Cloud account created; billing owner agreed; plan tier confirmed against expected traffic |
+| 0.7 | Repository, CI skeleton, local Docker Compose (Directus + Postgres) for development |
+| 0.8 | Baseline measurement of the current site — Lighthouse, axe, page weight, traffic if analytics exist — so improvement is provable |
+| 0.9 | Design direction under the "new look, same map" constraint: the league identity rebuilt for legibility, with the existing page names and structure fixed as given |
 
-**Exit criteria:** every open question answered or explicitly deferred with an owner and a date.
+**Exit criteria:** the source schema is documented and mapped, and every remaining open question is answered or explicitly deferred with an owner and a date.
 
 ---
 
@@ -122,16 +125,17 @@ Companion to [01-prd.md](01-prd.md) and [02-data-model.md](02-data-model.md).
 
 | # | Deliverable |
 |---|---|
-| 5.1 | ETL scripts for every source in §6 of the data model, idempotent and re‑runnable |
+| 5.1 | ETL from the database export — idempotent, re‑runnable, driven by the schema mapping produced in Phase 0. HTML scraping is used only for anything the export turns out not to contain |
 | 5.2 | **Hall of Fame 1970–present migrated** and verified line by line against the source page |
 | 5.3 | Historic tables, averages, results and Rolls of Honour migrated as `is_historic` snapshots |
-| 5.4 | Name reconciliation reviewed and signed off by the match secretary |
-| 5.5 | Documents uploaded, categorised, superseded editions marked |
-| 5.6 | 301 redirect map (§7 of the data model) implemented and tested against the full crawl list from this audit — all 90 URLs |
-| 5.7 | DNS cutover with a low TTL set 48 hours ahead; HTTPS with HSTS; `www` and apex both resolving |
-| 5.8 | Old site frozen read‑only at `legacy.hertsttl.org.uk` for one season as a safety net |
-| 5.9 | Announcement: home‑page notice, newsletter, email to all captains, a note read at the AGM |
-| 5.10 | Search Console verified; sitemap submitted; redirects monitored for 404s |
+| 5.4 | **Reconciliation pass**: migrated tables, averages, fixtures and results compared against the Phase 0 scrape of the live site. Every discrepancy explained before cutover |
+| 5.5 | Name reconciliation reviewed and signed off by the match secretary |
+| 5.6 | Documents uploaded, categorised, superseded editions marked |
+| 5.7 | 301 redirect map (§7 of the data model) implemented and tested against the full crawl list from this audit — all 90 URLs. Under "new look, same map", each redirect must land on a page carrying the same name and content as the one it replaces |
+| 5.8 | DNS cutover with a low TTL set 48 hours ahead; HTTPS with HSTS; `www` and apex both resolving |
+| 5.9 | Old site frozen read‑only at `legacy.hertsttl.org.uk` for one season as a safety net |
+| 5.10 | Announcement: home‑page notice, newsletter, email to all captains, a note read at the AGM |
+| 5.11 | Search Console verified; sitemap submitted; redirects monitored for 404s |
 
 **Cutover timing.** Do **not** cut over mid‑season or in the week before a cup final. The two safe windows are late August (pre‑season) or the Christmas break. Recommend pre‑season.
 
@@ -182,9 +186,11 @@ Automated tools catch perhaps 30% of accessibility problems. The panel of six re
 
 ---
 
-## A leaner alternative
+## A leaner alternative — *not being taken*
 
-If 18 weeks or the budget is not available, this cut still leaves the league materially better off:
+**Superseded by the 26 Aug 2026 decision to run all phases.** Recorded here in case the programme has to be cut back mid‑flight; if that happens, this is the shape to cut to.
+
+If 18 weeks or the budget were not available, this cut would still leave the league materially better off:
 
 **Minimum viable modernisation (~8 weeks)**
 - Phase 0, Phase 1

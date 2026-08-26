@@ -4,7 +4,9 @@
 **Version:** 0.1 (draft for committee review)
 **Date:** 26 August 2026
 **Author:** prepared for the HDTTL committee
-**Status:** Draft — see [04-open-questions.md](04-open-questions.md) for decisions still needed
+**Status:** Draft — four blocking decisions settled 26 Aug 2026; see [04-open-questions.md](04-open-questions.md) for the rest
+
+**Decisions in force:** full database export available · Directus Cloud (managed) · all phases in scope, ~18 weeks · "new look, same map" — modern redesign, unchanged information architecture and page names
 
 ---
 
@@ -228,11 +230,13 @@ This section is normative, not advisory. It is the reason the project exists in 
 
 ### 7.4 Navigation and wording
 
-- Top navigation limited to five items: **Home · Fixtures & Results · Tables · Clubs · More**. On mobile, a large labelled "Menu" button — never a bare hamburger icon.
+**Binding constraint — "new look, same map" (decision Q8).** The information architecture and the page names do not change. Every page keeps the name players already use, in the place they already look for it. Where the audit recommended clearer wording, it is added as a **subtitle beneath the existing name**, never as a replacement: "League Tables" gains "Who's top of each division", it does not become "Standings". Old URLs redirect to pages carrying the same name and the same content, so a years‑old bookmark lands somewhere recognisable rather than merely somewhere valid. What changes is type, contrast, spacing, layout, mobile behaviour, interaction and print support.
+
+- Top navigation limited to five entries: **Home · Fixtures · Tables · Clubs · More**. These are *grouping* labels drawn from the league's existing vocabulary — the destination pages beneath them keep their current names ("League Tables", "Fixture Calendar", "Club Details", "Match History"). On mobile, a large labelled "Menu" button — never a bare hamburger icon.
 - Home page presents large tappable cards for the six things people actually come for: This week's matches · Latest results · League tables · Find a club · Averages · News.
 - A persistent, obvious "Back to Home" on every page, honouring the existing site's most‑used affordance.
 - Breadcrumbs on every page below the top level.
-- **Plain English labels throughout.** "Fixtures & Results" not "Match History". "Who's top of the league" as a subtitle to "Tables". "Enter a result" not "Input scorecard". No jargon, no abbreviations without expansion on first use.
+- **Plain English as subtitles, not replacements.** Existing page names stay; a one‑line explanation sits beneath each — "League Tables / Who's top of each division", "Match History / Every match your team has played". Only *new* controls that have no existing name get plain‑English wording from scratch — "Enter a result", not "Input scorecard". No jargon, no abbreviations without expansion on first use.
 - Error messages state what happened, why, and exactly what to do next, in the second person, next to the field concerned. Never a code, never "invalid input".
 
 ### 7.5 Comprehension aids
@@ -283,7 +287,7 @@ This section is normative, not advisory. It is the reason the project exists in 
 | Computation | Directus **Flows** | Recalculate standings and averages on card confirmation; send confirmation and reminder emails; fire the frontend revalidation webhook; nightly integrity checks |
 | Files | Directus file library, S3‑compatible storage | PDFs, logos, sponsor images |
 | Auth | Directus auth, magic link + optional password, TOTP for elevated roles | |
-| Hosting | Directus Cloud, or self‑hosted Docker on a small VPS | See Q2 |
+| Hosting | **Directus Cloud** (decided) | Managed. Patching, backups and uptime are not a volunteer's responsibility |
 
 ### Frontend — Vue
 
@@ -343,7 +347,8 @@ This section is normative, not advisory. It is the reason the project exists in 
 
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
-| Existing database is inaccessible or undocumented | Medium | High | Fall back to scraping the public HTML — already proven in this audit; budget two weeks for ETL and manual reconciliation |
+| ~~Existing database is inaccessible~~ — **retired**, a full export is available | — | — | Migration is now a documented transform from a known schema. The audit's scraper is kept as a reconciliation check: migrated data must agree with what the public pages display |
+| Exported schema turns out to be undocumented or inconsistent | Medium | Medium | Schema documentation is an explicit Phase 0 deliverable, before any ETL is written; reconciliation against the scrape catches silent losses |
 | Captains resist a new results process | Medium | High | Involve three captains from week one; run the old and new entry paths in parallel for one half‑season; provide a printed one‑page guide; keep a phone/email fallback to the match secretary |
 | Older users find the new site harder despite the effort | Medium | High | Usability test with five real players aged 60+ at prototype stage and again before launch; keep URL structure and page names familiar; keep "Back to Home" |
 | Volunteer capacity — nobody to run it after launch | High | High | Choose managed hosting; document everything; train two committee members; keep the operational surface deliberately small |
@@ -356,7 +361,9 @@ This section is normative, not advisory. It is the reason the project exists in 
 
 ## 12. Indicative cost
 
-| Item | Managed | Self‑hosted |
+**Selected: managed (Directus Cloud).**
+
+| Item | Managed *(selected)* | Self‑hosted *(not taken)* |
 |---|---|---|
 | Directus | Directus Cloud from ~$15/mo | VPS €6–12/mo (Hetzner/DO), Docker |
 | Frontend hosting | Free tier (Cloudflare Pages / Netlify) | Same |
@@ -365,9 +372,9 @@ This section is normative, not advisory. It is the reason the project exists in 
 | Object storage | Included | ~€1/mo |
 | Domain | Existing | Existing |
 | TLS | Free | Free |
-| **Annual total** | **~£180–250** | **~£90–160** |
+| **Annual total** | **~£180–250** | ~£90–160 |
 
-Managed is recommended despite the cost: it removes patching, backups and uptime from a volunteer's plate, which is where the real risk sits.
+The extra ~£100/year buys away patching, backups and uptime monitoring — which is where the real risk sits for a volunteer‑run league. The existing Plesk/Windows hosting can be retired once the frozen legacy site is decommissioned, which recovers part of that cost.
 
 ---
 

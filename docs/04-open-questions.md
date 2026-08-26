@@ -1,14 +1,33 @@
 # Open Questions
 
-Decisions needed before or during Phase 0. The four marked **★** change the shape of the work and should be settled first.
+Decisions needed before or during Phase 0.
+
+## Decisions made — 26 August 2026
+
+The four blocking questions are settled. They are recorded below with their original framing struck through to "**Decided**".
+
+| # | Question | Decision |
+|---|---|---|
+| **Q1** | Access to the existing database | **Full database export available** — migration is export‑led; scraping is fallback only |
+| **Q4** | Hosting | **Directus Cloud** (managed) |
+| **Q7** | Scope of the first release | **All phases** — full 18‑week programme through to migration and aftercare |
+| **Q8** | Degree of visual change | **New look, same map** — modern redesign, unchanged information architecture and page names |
+
+**What these decisions change**
+
+- The ±2 week migration risk is removed, and everything the site does not display publicly — contact details, historic scorecards behind login, registration history — comes across intact. Phase 0 gains a schema‑documentation task; Phase 5's ETL becomes a transform rather than a scrape.
+- Hosting is fixed at roughly **£180–250/year**. No VPS provisioning, patching or backup rota falls to a volunteer.
+- The lean ~8‑week alternative in the implementation plan is **not** being taken. Phases 0–6 run as written.
+- The design brief is now explicit: **every page keeps its current name and its place in the structure.** "League Tables" stays "League Tables" and stays where it is. What changes is type, contrast, spacing, layout, mobile behaviour and interaction. This is a constraint on the design, not a suggestion.
 
 ---
 
 ## Backend and data
 
-**★ Q1 — What access is there to the existing database?**
-The site runs Classic ASP on IIS/Plesk, so the data is most likely SQL Server or Access. A direct export makes migration straightforward. If it isn't available, everything must be scraped from the public HTML — proven possible in this audit, but it loses anything the site doesn't display (email addresses, phone numbers, historic scorecards behind login) and adds roughly two weeks.
-*Options:* full export available · read‑only access available · scrape only · unknown, needs investigation.
+**★ Q1 — What access is there to the existing database?** — **Decided: full export available.**
+The site runs Classic ASP on IIS/Plesk, so the data is most likely SQL Server or Access. With a direct export, migration is a documented transform from a known schema rather than an HTML scrape, and nothing that the site keeps behind its login is lost. The scraper written during this audit is retained as a reconciliation check — the migrated data should agree with what the public pages currently display.
+
+*Remaining task:* obtain the export, document the source schema, and map it field by field onto [02-data-model.md](02-data-model.md) during Phase 0.
 
 **Q2 — Who currently holds the hosting, DNS and domain, and can that be transferred?**
 Needed for the HTTPS fix regardless of anything else.
@@ -20,9 +39,10 @@ The Hall of Fame runs to 1970. Tables, averages and match results exist on the s
 
 ## Hosting and operations
 
-**★ Q4 — Managed or self‑hosted?**
-Directus Cloud costs roughly £180–250/year and removes patching, backups and uptime from a volunteer. Self‑hosting on a small VPS is roughly £90–160/year but needs someone to look after it. Given the bus‑factor risk this project exists partly to solve, managed is recommended.
-*Options:* Directus Cloud · self‑hosted VPS · keep the existing Plesk host · undecided.
+**★ Q4 — Managed or self‑hosted?** — **Decided: Directus Cloud.**
+Roughly £180–250/year, and patching, backups and uptime stop being a volunteer's responsibility — which is where the real risk sat. The existing Plesk/Windows host is no longer part of the target architecture and can be retired once the legacy site is decommissioned (see Q9).
+
+*Remaining task:* create the account, decide who holds billing, and confirm the plan tier against expected traffic during Phase 0.
 
 **Q5 — Who runs the site after launch, and how much time do they have?**
 This determines how much can safely be automated versus how much needs an interface. If the answer is "the same one volunteer", the scope should shrink and the automation should grow.
@@ -34,12 +54,21 @@ The plan assumes under £250/year. If there is less, self‑hosting and free tie
 
 ## Scope and sequencing
 
-**★ Q7 — Phase 1 scope: public site only, or public site plus captain result entry?**
-The public read‑only site (Phase 2) can launch in about 9 weeks and fixes every critical and high finding. Result entry (Phase 3) adds about 4 weeks and is where the real workflow benefit sits — but it also carries the change‑management risk, because it asks captains to change a habit.
-*Options:* public site first, entry later · both together · public site only for now.
+**★ Q7 — Phase 1 scope: public site only, or public site plus captain result entry?** — **Decided: all phases.**
+The full programme runs — Phases 0 through 6, roughly 18 weeks, ending with migration, cutover and aftercare. The lean alternative in [03-implementation-plan.md](03-implementation-plan.md) is not being taken.
 
-**★ Q8 — How much visual change do you want?**
-Older users value familiarity, and a radical redesign can cost more in confusion than it gains in polish. Three positions: (a) keep the current structure, colours and page names, fixing only legibility and mobile; (b) a clear modern redesign that keeps the same information architecture and page names; (c) a full rethink of both look and structure. Recommendation: **(b)**.
+Because the whole programme is in scope, two things become more important rather than less: the **beta at week 9 still happens** and still runs in parallel with the old site — committing to all phases is not a reason to defer the first release to the end — and the **change management around result entry (Phase 3)** needs real attention, because captains will be asked to change a habit. The three‑captain test panel recruited in Phase 0 is the mitigation, and it is not optional.
+
+**★ Q8 — How much visual change do you want?** — **Decided: new look, same map.**
+A modern, legible redesign that keeps the existing information architecture and page names exactly as they are. Concretely, this is now a binding constraint on the design work:
+
+- Every page keeps the name players already use. "League Tables" does not become "Standings". "Fixture Calendar" does not become "Schedule". Where the audit recommended clearer labels, they are added as **subtitles**, not replacements — "League Tables" with "Who's top of each division" beneath it.
+- The nav structure keeps its current groupings. The five‑item top bar reorganises *how* the existing items are reached; it does not rename or relocate them.
+- "Back to Home" stays on every page, in the same role it plays today.
+- Old URLs redirect to new pages that carry the same name and the same content — a bookmark lands somewhere recognisable, not just somewhere valid.
+- What changes: typography, contrast, spacing, layout, mobile behaviour, interaction (no hover dependency), and print support.
+
+*Remaining task:* one design direction, reviewed by the 60+ test panel at the end of Phase 1 before any page templates are built on it.
 
 **Q9 — Should the old site stay online?**
 Recommendation: freeze it read‑only at `legacy.hertsttl.org.uk` for one season as a safety net, with all old URLs 301‑redirected to the new site.

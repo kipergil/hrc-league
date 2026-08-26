@@ -10,7 +10,16 @@ Read in order:
 | [01-prd.md](01-prd.md) | The PRD. Goals, users, the **static vs dynamic analysis** that drives the architecture, functional requirements, the older‑user design requirements, security and privacy, the technology stack and why, success metrics, risks, cost |
 | [02-data-model.md](02-data-model.md) | Directus collections and fields, roles and field‑level permissions, automation Flows, the public API surface, migration mapping and the old→new URL redirect map |
 | [03-implementation-plan.md](03-implementation-plan.md) | Six phases over ~18 weeks, with a leaner ~8‑week alternative. Sequencing rationale and the accessibility assurance gate |
-| [04-open-questions.md](04-open-questions.md) | 23 decisions needed from the committee, four of them blocking |
+| [04-open-questions.md](04-open-questions.md) | 23 decisions. The four blocking ones are settled; nineteen remain |
+
+## Decisions in force — 26 August 2026
+
+| Question | Decision |
+|---|---|
+| Access to the existing data | **Full database export available** — migration is an export-led transform, not a scrape |
+| Hosting | **Directus Cloud**, managed, ~£180–250/year |
+| Scope | **All six phases**, ~18 weeks, with the public beta still landing at week 9 |
+| Visual change | **New look, same map** — modern redesign, unchanged information architecture and page names |
 
 ## The short version
 
