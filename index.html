@@ -468,7 +468,7 @@
       <li><a href="http://hertsttl.org.uk/Calendar1.htm" target="_blank" rel="noopener">Division One Calendar (source)</a></li>
       <li><a href="http://hertsttl.org.uk/Calendar2.htm" target="_blank" rel="noopener">Division Two Calendar (source)</a></li>
     </ul>
-    <div class="footer-note">Parsed from the Premier, Division One &amp; Division Two fixture grids · 4 teams (HRC A, HRC B, HRC C, HRC D) · 60 league matches · 9 shared cup rounds</div>
+    <div class="footer-note">Parsed from the Premier, Division One &amp; Division Two fixture grids · 4 teams (HRC A, HRC B, HRC C, HRC D) · 61 league matches · 9 shared cup rounds</div>
   </footer>
 
 <script>
@@ -521,15 +521,18 @@ const matches = [
   { team:"HRC C", date:"2027-03-01", ha:"Home", opponent:"Ellenborough B" },
   { team:"HRC C", date:"2027-03-08", ha:"Away", opponent:"Grundy Park C" },
   { team:"HRC C", date:"2027-04-12", ha:"Home", opponent:"Cheshunt B" },
-  // HRC D (Division Two)
-  { team:"HRC D", date:"2026-09-21", ha:"Away", opponent:"St. Andrews B" },
-  { team:"HRC D", date:"2026-09-28", ha:"Home", opponent:"Furneux Pelham" },
-  { team:"HRC D", date:"2026-10-05", ha:"Away", opponent:"Water Lane E" },
-  { team:"HRC D", date:"2026-10-19", ha:"Home", opponent:"Stanstead Abbotts" },
-  { team:"HRC D", date:"2026-11-02", ha:"Home", opponent:"Grundy Park D" },
-  { team:"HRC D", date:"2026-11-16", ha:"Away", opponent:"Water Lane D" },
-  { team:"HRC D", date:"2026-11-30", ha:"Away", opponent:"Cheshunt D" },
-  { team:"HRC D", date:"2026-12-07", ha:"Home", opponent:"PramaStars B" },
+  // HRC D (Division Two) — first half on actual match dates, with player
+  // allocations, from the club's own Hertford League 26/27 sheet.
+  { team:"HRC D", date:"2026-09-24", ha:"Away", opponent:"St. Andrews B", players:["Jo","Steve","Cathy"] },
+  { team:"HRC D", date:"2026-09-30", ha:"Home", opponent:"Furneux Pelham", players:["Tony","Steve","Jake"] },
+  { team:"HRC D", date:"2026-10-07", ha:"Away", opponent:"Water Lane E", players:["Cathy","Steve","Jake"] },
+  { team:"HRC D", date:"2026-10-21", ha:"Home", opponent:"Stanstead Abbotts", players:["Tony","Cathy","Steve"] },
+  { team:"HRC D", date:"2026-10-28", ha:"Away", opponent:"Water Lane C", players:["Jake","Cathy","Jo"] },
+  { team:"HRC D", date:"2026-11-04", ha:"Home", opponent:"Grundy Park D", players:["Steve","Jake","Manuel"] },
+  { team:"HRC D", date:"2026-11-18", ha:"Away", opponent:"Water Lane D", players:["Cathy","Tony","Manuel"] },
+  { team:"HRC D", date:"2026-12-01", ha:"Away", opponent:"Cheshunt D", players:["Jo","Steve","Manuel"] },
+  { team:"HRC D", date:"2026-12-09", ha:"Home", opponent:"PramaStars B", players:["Jo","Cathy","Tony"] },
+  // Second half — still the league grid's week-commencing dates, no line-ups published yet.
   { team:"HRC D", date:"2027-01-11", ha:"Home", opponent:"St. Andrews B" },
   { team:"HRC D", date:"2027-01-18", ha:"Away", opponent:"Furneux Pelham" },
   { team:"HRC D", date:"2027-01-25", ha:"Home", opponent:"Water Lane E" },
@@ -541,10 +544,12 @@ const matches = [
 ];
 
 // Cup rounds — league-wide weeks (Divisional/Handicap/Finals) that apply to every
-// HRC team at once, so they're a single merged row rather than one per team.
+// HRC team at once, so they're a single merged row rather than one per team. A
+// round can still name a line-up per team; rounds with none just say who they
+// apply to.
 const cupRounds = [
-  { date:"2026-09-14", cupType:"Divisional" },
-  { date:"2026-10-12", cupType:"Divisional" },
+  { date:"2026-09-14", cupType:"Divisional", lineups:{ "HRC D":["Tony","Jake","Manuel"] } },
+  { date:"2026-10-12", cupType:"Divisional", lineups:{ "HRC D":["Manuel","Jake","Steve"] } },
   { date:"2026-11-09", cupType:"Divisional" },
   { date:"2026-12-14", cupType:"Finals" },
   { date:"2027-01-04", cupType:"Handicap" },
@@ -591,6 +596,7 @@ function saveSelectedTeam(team){
 function allPlayers(){
   const set = new Set();
   matches.forEach(m => (m.players||[]).forEach(p => set.add(p)));
+  cupRounds.forEach(r => Object.values(r.lineups||{}).forEach(pl => pl.forEach(p => set.add(p))));
   return [...set].sort((a,b) => a.localeCompare(b));
 }
 
@@ -600,6 +606,9 @@ function availablePlayers(){
   matches
     .filter(m => !selected || m.team === selected)
     .forEach(m => (m.players||[]).forEach(p => set.add(p)));
+  cupRounds.forEach(r => Object.entries(r.lineups||{})
+    .filter(([team]) => !selected || team === selected)
+    .forEach(([, pl]) => pl.forEach(p => set.add(p))));
   return [...set].sort((a,b) => a.localeCompare(b));
 }
 
@@ -640,7 +649,36 @@ const today = todayISO();
 // Teams a player filter applies to: the selected team, or — when no team is
 // picked — every team that player actually turns out for.
 function teamsPlayedFor(player){
-  return [...new Set(matches.filter(m => (m.players||[]).includes(player)).map(m => m.team))];
+  const set = new Set();
+  matches.forEach(m => { if((m.players||[]).includes(player)) set.add(m.team); });
+  cupRounds.forEach(r => Object.entries(r.lineups||{})
+    .forEach(([team, pl]) => { if(pl.includes(player)) set.add(team); }));
+  return [...set];
+}
+
+// Teams currently in view, or null for all of them.
+function scopeTeams(){
+  if(selected) return [selected];
+  if(selectedPlayer) return teamsPlayedFor(selectedPlayer);
+  return null;
+}
+
+// The line-ups a cup round publishes for the teams currently in view.
+function cupLineups(round){
+  const scope = scopeTeams();
+  return Object.entries(round.lineups||{})
+    .filter(([team]) => !scope || scope.includes(team))
+    .map(([team, players]) => ({ team, players }));
+}
+
+// Same rule as league matches: a round drops out only when it names a line-up
+// this player isn't in. A round with none still applies to their team.
+function visibleCupRounds(){
+  if(!selectedPlayer) return cupRounds;
+  return cupRounds.filter(r => {
+    const lineups = cupLineups(r);
+    return lineups.length === 0 || lineups.some(l => l.players.includes(selectedPlayer));
+  });
 }
 
 // League rows currently in view: team filter first, then player. Matches with no
@@ -656,11 +694,13 @@ function visibleLeagueMatches(){
 }
 
 function isPlayingIn(m){
-  return !!selectedPlayer && !!m.players && m.players.includes(selectedPlayer);
+  if(!selectedPlayer) return false;
+  if(m.cupType) return cupLineups(m).some(l => l.players.includes(selectedPlayer));
+  return !!m.players && m.players.includes(selectedPlayer);
 }
 
 function upcomingFixture(){
-  return [...visibleLeagueMatches(), ...cupRounds]
+  return [...visibleLeagueMatches(), ...visibleCupRounds()]
     .filter(m => m.date >= today)
     .sort((a,b) => a.date.localeCompare(b.date))[0] || null;
 }
@@ -726,7 +766,8 @@ function renderSummary(){
     const playerTeams = [...new Set(rows.map(m => m.team))];
     const scope = playerTeams.length === 1 ? ` for <strong>${playerTeams[0]}</strong>` : '';
     const tbcText = tbc ? `, plus <strong>${tbc}</strong> with no line-up announced yet` : '';
-    el.innerHTML = `<strong>${selectedPlayer}</strong> is named in <strong>${named}</strong> league match${named!==1?'es':''}${scope}${tbcText}, and the ${cupRounds.length} shared cup rounds.`;
+    const cups = visibleCupRounds().length;
+    el.innerHTML = `<strong>${selectedPlayer}</strong> is named in <strong>${named}</strong> league match${named!==1?'es':''}${scope}${tbcText}, and <strong>${cups}</strong> cup round${cups!==1?'s':''}.`;
     return;
   }
   if(!selected){
@@ -786,7 +827,7 @@ function renderMonths(){
     const leagueRows = visibleLeagueMatches()
       .filter(m => inMonth(m.date))
       .map(m => ({ kind:'league', ...m }));
-    const cupRows = cupRounds
+    const cupRows = visibleCupRounds()
       .filter(m => inMonth(m.date))
       .map(m => ({ kind:'cup', ...m }));
     const monthMatches = [...leagueRows, ...cupRows]
@@ -827,7 +868,21 @@ function renderMonths(){
         } else {
           matchupHtml = `${m.cupType} Cup`;
           badgeHtml = `<span class="agenda-ha cup">Cup</span>`;
-          noteHtml = `<span class="agenda-note">Applies to all HRC teams</span>`;
+          const lineups = cupLineups(m);
+          if(lineups.length === 0){
+            noteHtml = `<span class="agenda-note">Applies to all HRC teams</span>`;
+          } else {
+            // With one team in view the chips speak for themselves; across all
+            // teams each list needs saying whose it is.
+            const scope = scopeTeams();
+            const label = scope && scope.length === 1;
+            playersHtml = lineups.map(l => {
+              const chips = l.players
+                .map(p => `<span class="player-chip${p === selectedPlayer ? ' me' : ''}">${p}</span>`)
+                .join('');
+              return `<div class="agenda-playerlist"><span class="players-label">${label ? 'Playing' : l.team}</span>${chips}</div>`;
+            }).join('');
+          }
         }
 
         const row = document.createElement('div');
