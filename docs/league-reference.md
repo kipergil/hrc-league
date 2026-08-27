@@ -144,8 +144,9 @@ This formula reproduces **all 15** fixtures the two club sheets and the league
 grids both cover — HRC B's first half (7) and HRC D's (8) — to the day,
 including the awkward ones: the Friday at Ellenborough A, the Tuesdays at
 Cheshunt. Two independent sources agreeing on every date either can confirm is
-why these dates are trusted. The 16th sheet row, HRC D's Water Lane C fixture,
-has no league counterpart to check against — see §7.
+why these dates are trusted. The sheets' one remaining row, HRC D's Water Lane
+C fixture, had no league counterpart at all and turned out to be an error — see
+§7.
 
 ---
 
@@ -254,23 +255,32 @@ fixture seems to be missing.
 
 ---
 
-## 7. Known discrepancies
+## 7. Sheet errors found so far
 
-**HRC D vs Water Lane C, 28 Oct 2026 — in the club sheet, not in the league.**
-The HL 26-27 Version 1 sheet lists this away fixture with a line-up of Jake,
-Cathy and Jo. The league source contradicts it twice over:
+**HRC D vs Water Lane C, 28 Oct 2026 — a spurious row. Resolved: not in the
+calendar.** The HL 26-27 Version 1 sheet listed this away fixture with a
+line-up of Jake, Cathy and Jo. Three checks put it beyond doubt:
 
 - Week 7 in HRC D's row is a `Break` cell reading "No Match" — their bye week.
 - Water Lane C is a **Division One** club. It's on HRC C's fixture list, not
   HRC D's.
+- It isn't a mis-spelling of Water Lane D or E either. HRC D's two Water Lane
+  away fixtures are already on the sheet, on their correct dates and with
+  different line-ups — E on 07/10, D on 18/11 — so there is no missing fixture
+  for this row to be. The sheet appears to have filled in a bye week.
 
-The fixture is kept in the calendar because it was explicitly approved, and it
-may be a friendly or a rearrangement the grid doesn't carry. It's why HRC D
-shows 17 league matches where the league shows 16. Worth settling with whoever
-maintains the sheet.
+The line-up went with it. All six players still appear elsewhere, so the roster
+is unaffected.
+
+This is the case the §8 checklist exists for: it was caught only by
+cross-checking each sheet row against the league grid, and it briefly put an
+extra fixture in the calendar.
 
 **Minor sheet typos, already handled:** "Fernaux Pelham" is the league's
 *Furneux Pelham*; the 21/09 row's date reads "24/09/25" for 2026.
+
+**Nothing outstanding.** Every fixture in the calendar now matches the league
+source exactly.
 
 ---
 
