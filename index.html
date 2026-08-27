@@ -468,28 +468,31 @@
       <li><a href="http://hertsttl.org.uk/Calendar1.htm" target="_blank" rel="noopener">Division One Calendar (source)</a></li>
       <li><a href="http://hertsttl.org.uk/Calendar2.htm" target="_blank" rel="noopener">Division Two Calendar (source)</a></li>
     </ul>
-    <div class="footer-note">Parsed from the Premier, Division One &amp; Division Two fixture grids · 4 teams (HRC A, HRC B, HRC C, HRC D) · 61 league matches · 9 shared cup rounds</div>
+    <div class="footer-note">Parsed from the Premier, Division One &amp; Division Two fixture grids · 4 teams (HRC A, HRC B, HRC C, HRC D) · 60 league matches · 9 shared cup rounds</div>
   </footer>
 
 <script>
-// League matches — team-specific, one row per fixture.
+// League matches — team-specific, one row per fixture. Dates are the real match
+// dates the league's calendar pages carry in their hover tooltips: each division's
+// CalendarJ*.js derives them as season start (Mon 14 Sep 2026) + (week - 1) weeks +
+// the hosting club's home night, rather than the week-commencing date the grid shows.
 const matches = [
   // HRC A
-  { team:"HRC A", date:"2026-09-21", ha:"Home", opponent:"Ellenborough A" },
+  { team:"HRC A", date:"2026-09-23", ha:"Home", opponent:"Ellenborough A" },
   { team:"HRC A", date:"2026-10-07", ha:"Home", opponent:"HRC B" },
-  { team:"HRC A", date:"2026-10-19", ha:"Away", opponent:"Kidston" },
-  { team:"HRC A", date:"2026-10-26", ha:"Home", opponent:"Water Lane B" },
-  { team:"HRC A", date:"2026-11-02", ha:"Away", opponent:"Water Lane A" },
-  { team:"HRC A", date:"2026-11-16", ha:"Home", opponent:"Grundy Park A" },
-  { team:"HRC A", date:"2026-12-07", ha:"Away", opponent:"Cheshunt A" },
-  { team:"HRC A", date:"2027-01-11", ha:"Away", opponent:"Ellenborough A" },
-  { team:"HRC A", date:"2027-01-25", ha:"Away", opponent:"HRC B" },
-  { team:"HRC A", date:"2027-02-08", ha:"Home", opponent:"Kidston" },
-  { team:"HRC A", date:"2027-02-15", ha:"Away", opponent:"Water Lane B" },
-  { team:"HRC A", date:"2027-03-01", ha:"Home", opponent:"Water Lane A" },
+  { team:"HRC A", date:"2026-10-21", ha:"Away", opponent:"Kidston" },
+  { team:"HRC A", date:"2026-10-28", ha:"Home", opponent:"Water Lane B" },
+  { team:"HRC A", date:"2026-11-04", ha:"Away", opponent:"Water Lane A" },
+  { team:"HRC A", date:"2026-11-18", ha:"Home", opponent:"Grundy Park A" },
+  { team:"HRC A", date:"2026-12-08", ha:"Away", opponent:"Cheshunt A" },
+  { team:"HRC A", date:"2027-01-15", ha:"Away", opponent:"Ellenborough A" },
+  { team:"HRC A", date:"2027-01-27", ha:"Away", opponent:"HRC B" },
+  { team:"HRC A", date:"2027-02-10", ha:"Home", opponent:"Kidston" },
+  { team:"HRC A", date:"2027-02-17", ha:"Away", opponent:"Water Lane B" },
+  { team:"HRC A", date:"2027-03-03", ha:"Home", opponent:"Water Lane A" },
   { team:"HRC A", date:"2027-03-08", ha:"Away", opponent:"Grundy Park A" },
-  { team:"HRC A", date:"2027-04-12", ha:"Home", opponent:"Cheshunt A" },
-  // HRC B — dates and player allocations from the club's own First Half 2026/27 fixture sheet
+  { team:"HRC A", date:"2027-04-14", ha:"Home", opponent:"Cheshunt A" },
+  // HRC B — player allocations from the club's own First Half 2026/27 fixture sheet
   { team:"HRC B", date:"2026-09-23", ha:"Away", opponent:"Water Lane A", players:["Anuj","Rai","Sunil"] },
   { team:"HRC B", date:"2026-09-30", ha:"Home", opponent:"Grundy Park A", players:["Anuj","Gideon","Mustafa"] },
   { team:"HRC B", date:"2026-10-07", ha:"Away", opponent:"HRC A", players:["Mustafa","Rai","Sunil"] },
@@ -497,50 +500,49 @@ const matches = [
   { team:"HRC B", date:"2026-10-30", ha:"Away", opponent:"Ellenborough A", players:["Gideon","Mustafa","Rai"] },
   { team:"HRC B", date:"2026-12-02", ha:"Away", opponent:"Kidston", players:["Anuj","Rai","Sunil"] },
   { team:"HRC B", date:"2026-12-09", ha:"Home", opponent:"Water Lane B", players:["Anuj","Gideon","Mustafa"] },
-  { team:"HRC B", date:"2027-01-11", ha:"Home", opponent:"Water Lane A" },
+  { team:"HRC B", date:"2027-01-13", ha:"Home", opponent:"Water Lane A" },
   { team:"HRC B", date:"2027-01-18", ha:"Away", opponent:"Grundy Park A" },
-  { team:"HRC B", date:"2027-01-25", ha:"Home", opponent:"HRC A" },
-  { team:"HRC B", date:"2027-02-08", ha:"Away", opponent:"Cheshunt A" },
-  { team:"HRC B", date:"2027-02-15", ha:"Home", opponent:"Ellenborough A" },
-  { team:"HRC B", date:"2027-03-15", ha:"Home", opponent:"Kidston" },
-  { team:"HRC B", date:"2027-04-12", ha:"Away", opponent:"Water Lane B" },
+  { team:"HRC B", date:"2027-01-27", ha:"Home", opponent:"HRC A" },
+  { team:"HRC B", date:"2027-02-09", ha:"Away", opponent:"Cheshunt A" },
+  { team:"HRC B", date:"2027-02-17", ha:"Home", opponent:"Ellenborough A" },
+  { team:"HRC B", date:"2027-03-17", ha:"Home", opponent:"Kidston" },
+  { team:"HRC B", date:"2027-04-14", ha:"Away", opponent:"Water Lane B" },
   // HRC C (Division One)
-  { team:"HRC C", date:"2026-09-21", ha:"Home", opponent:"St. Andrews A" },
+  { team:"HRC C", date:"2026-09-23", ha:"Home", opponent:"St. Andrews A" },
   { team:"HRC C", date:"2026-09-28", ha:"Away", opponent:"Grundy Park B" },
-  { team:"HRC C", date:"2026-10-05", ha:"Home", opponent:"Water Lane C" },
-  { team:"HRC C", date:"2026-10-19", ha:"Away", opponent:"Cheshunt C" },
-  { team:"HRC C", date:"2026-10-26", ha:"Home", opponent:"PramaStars A" },
-  { team:"HRC C", date:"2026-11-02", ha:"Away", opponent:"Ellenborough B" },
-  { team:"HRC C", date:"2026-11-16", ha:"Home", opponent:"Grundy Park C" },
-  { team:"HRC C", date:"2026-12-07", ha:"Away", opponent:"Cheshunt B" },
-  { team:"HRC C", date:"2027-01-11", ha:"Away", opponent:"St. Andrews A" },
-  { team:"HRC C", date:"2027-01-18", ha:"Home", opponent:"Grundy Park B" },
-  { team:"HRC C", date:"2027-01-25", ha:"Away", opponent:"Water Lane C" },
-  { team:"HRC C", date:"2027-02-08", ha:"Home", opponent:"Cheshunt C" },
-  { team:"HRC C", date:"2027-02-15", ha:"Away", opponent:"PramaStars A" },
-  { team:"HRC C", date:"2027-03-01", ha:"Home", opponent:"Ellenborough B" },
+  { team:"HRC C", date:"2026-10-07", ha:"Home", opponent:"Water Lane C" },
+  { team:"HRC C", date:"2026-10-20", ha:"Away", opponent:"Cheshunt C" },
+  { team:"HRC C", date:"2026-10-28", ha:"Home", opponent:"PramaStars A" },
+  { team:"HRC C", date:"2026-11-05", ha:"Away", opponent:"Ellenborough B" },
+  { team:"HRC C", date:"2026-11-18", ha:"Home", opponent:"Grundy Park C" },
+  { team:"HRC C", date:"2026-12-08", ha:"Away", opponent:"Cheshunt B" },
+  { team:"HRC C", date:"2027-01-14", ha:"Away", opponent:"St. Andrews A" },
+  { team:"HRC C", date:"2027-01-20", ha:"Home", opponent:"Grundy Park B" },
+  { team:"HRC C", date:"2027-01-27", ha:"Away", opponent:"Water Lane C" },
+  { team:"HRC C", date:"2027-02-10", ha:"Home", opponent:"Cheshunt C" },
+  { team:"HRC C", date:"2027-02-19", ha:"Away", opponent:"PramaStars A" },
+  { team:"HRC C", date:"2027-03-03", ha:"Home", opponent:"Ellenborough B" },
   { team:"HRC C", date:"2027-03-08", ha:"Away", opponent:"Grundy Park C" },
-  { team:"HRC C", date:"2027-04-12", ha:"Home", opponent:"Cheshunt B" },
-  // HRC D (Division Two) — first half on actual match dates, with player
-  // allocations, from the club's own Hertford League 26/27 sheet.
+  { team:"HRC C", date:"2027-04-14", ha:"Home", opponent:"Cheshunt B" },
+  // HRC D (Division Two) — player allocations from the club's own Hertford
+  // League 26/27 sheet (first half only).
   { team:"HRC D", date:"2026-09-24", ha:"Away", opponent:"St. Andrews B", players:["Jo","Steve","Cathy"] },
   { team:"HRC D", date:"2026-09-30", ha:"Home", opponent:"Furneux Pelham", players:["Tony","Steve","Jake"] },
   { team:"HRC D", date:"2026-10-07", ha:"Away", opponent:"Water Lane E", players:["Cathy","Steve","Jake"] },
   { team:"HRC D", date:"2026-10-21", ha:"Home", opponent:"Stanstead Abbotts", players:["Tony","Cathy","Steve"] },
-  { team:"HRC D", date:"2026-10-28", ha:"Away", opponent:"Water Lane C", players:["Jake","Cathy","Jo"] },
   { team:"HRC D", date:"2026-11-04", ha:"Home", opponent:"Grundy Park D", players:["Steve","Jake","Manuel"] },
   { team:"HRC D", date:"2026-11-18", ha:"Away", opponent:"Water Lane D", players:["Cathy","Tony","Manuel"] },
   { team:"HRC D", date:"2026-12-01", ha:"Away", opponent:"Cheshunt D", players:["Jo","Steve","Manuel"] },
   { team:"HRC D", date:"2026-12-09", ha:"Home", opponent:"PramaStars B", players:["Jo","Cathy","Tony"] },
-  // Second half — still the league grid's week-commencing dates, no line-ups published yet.
-  { team:"HRC D", date:"2027-01-11", ha:"Home", opponent:"St. Andrews B" },
-  { team:"HRC D", date:"2027-01-18", ha:"Away", opponent:"Furneux Pelham" },
-  { team:"HRC D", date:"2027-01-25", ha:"Home", opponent:"Water Lane E" },
-  { team:"HRC D", date:"2027-02-08", ha:"Away", opponent:"Stanstead Abbotts" },
+  // Second half — no line-ups published yet.
+  { team:"HRC D", date:"2027-01-13", ha:"Home", opponent:"St. Andrews B" },
+  { team:"HRC D", date:"2027-01-20", ha:"Away", opponent:"Furneux Pelham" },
+  { team:"HRC D", date:"2027-01-27", ha:"Home", opponent:"Water Lane E" },
+  { team:"HRC D", date:"2027-02-11", ha:"Away", opponent:"Stanstead Abbotts" },
   { team:"HRC D", date:"2027-03-01", ha:"Away", opponent:"Grundy Park D" },
-  { team:"HRC D", date:"2027-03-08", ha:"Home", opponent:"Water Lane D" },
-  { team:"HRC D", date:"2027-03-15", ha:"Home", opponent:"Cheshunt D" },
-  { team:"HRC D", date:"2027-04-12", ha:"Away", opponent:"PramaStars B" },
+  { team:"HRC D", date:"2027-03-10", ha:"Home", opponent:"Water Lane D" },
+  { team:"HRC D", date:"2027-03-17", ha:"Home", opponent:"Cheshunt D" },
+  { team:"HRC D", date:"2027-04-16", ha:"Away", opponent:"PramaStars B" },
 ];
 
 // Cup rounds — league-wide weeks (Divisional/Handicap/Finals) that apply to every
