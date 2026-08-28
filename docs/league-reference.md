@@ -271,9 +271,20 @@ Water Lane's page adds that on **Friday** nights they only have the hall until
 but it would matter if a fixture were rearranged.
 
 PramaStars and Stanstead Abbotts share a venue, so a fixture against either is
-at the same hall. The St. Andrews Centre is behind St Andrew's Church — the
-club's page says so, but it's left out of the stored address to keep the Google
-Maps lookup clean.
+at the same hall.
+
+**The St. Andrews Centre needs a different search term.** It sits behind
+St Andrew's Church, as the club's page notes, and Google Maps doesn't find the
+hall by its own name or postcode — so its venue entry carries a `maps` override:
+
+```js
+"St. Andrews": { place:"St. Andrews Centre", address:"St Andrew St, Hertford. SG14 1HZ",
+                 maps:"Hertford St Andrew Church" },
+```
+
+`maps` changes only what gets searched. The address still shows on the page and
+in the calendar entry's `LOCATION`, so nobody is told to go to a church. Add the
+same field to any other venue whose address doesn't land on the right pin.
 
 **Match length isn't published anywhere.** The calendar export blocks 2½ hours,
 which puts a 7.30pm start at 10pm; Water Lane's hall booking is the only
