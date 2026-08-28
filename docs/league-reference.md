@@ -22,7 +22,7 @@ changes — the date and opponent are already correct.
 
 ```js
 { team:"HRC D", date:"2026-09-30", ha:"Home", opponent:"Furneux Pelham",
-  players:["Tony","Steve H","Jake S"] },
+  players:["Tony M","Steve H","Jake S"] },
 ```
 
 - **Names are first name plus surname initial**, Title Case, no full stop:
@@ -52,7 +52,7 @@ already carries two:
 ```js
 { date:"2026-09-14", cupType:"Divisional",
   lineups:{ "HRC C":["Jackie T","John B","Dave C"],
-            "HRC D":["Tony","Jake S","Manuel"] } },
+            "HRC D":["Tony M","Jake S","Manuel"] } },
 ```
 
 With one team in view each list is labelled "Playing"; across all teams it's
@@ -85,7 +85,7 @@ Taken from the line-ups presently in the data.
 | HRC A | Andrew N, Chris W, Derek B, Kai D, Neil S, Paul J, Sandy N | team availability grid, first half only |
 | HRC B | Anuj P, Gideon A, Mustafa K, Rai L, Sunil T | club sheet, first half only |
 | HRC C | Dave C, Dudu S, Faith F, Jackie T, John B, Mike R | captain's Division One sheet, first half only |
-| HRC D | Cathy P, Jake S, Jo S, **Manuel**, Steve H, **Tony** | HL 26-27 Version 1, first half only |
+| HRC D | Cathy P, Jake S, Jo S, **Manuel**, Steve H, Tony M | HL 26-27 Version 1, first half only |
 
 ### Surnames
 
@@ -98,9 +98,11 @@ every registered player by team. Two things to know when reading it:
   and Mustafa Kipergil are registered HRC C but appear in HRC B's line-ups; Faith
   Frankel is registered HRC D but plays HRC C; Jake Skull is registered HRC C but
   plays HRC D. Take the surname from the page, the team from the line-up sheet.
-- **It is not exhaustive.** `Kai D`'s surname came from HRC A's own grid, not the
-  page. **Manuel** and **Tony** (HRC D) appear on no source at all and are still
-  stored without an initial — add theirs when someone can supply them.
+- **It is not exhaustive.** Three HRC D and HRC A players are absent from it:
+  `Kai D`'s surname came from HRC A's own grid, and `Tony M` (Martin) from the
+  club direct. **Manuel** is on no source at all and is still stored as a bare
+  first name — add his initial when someone can supply the surname. Nothing
+  collides with him, so he filters correctly meanwhile.
 
 The page also shows each team's contact and confirms all four HRC teams play
 home matches on Wednesday.
