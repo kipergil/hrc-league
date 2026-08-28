@@ -722,7 +722,7 @@ const venues = {
   "HRC":               { place:"Bushby Hall",                   address:"8 Wharf Road, Wormley, Herts. EN10 6HX" },
   "Kidston":           { place:"Kidston Institute",             address:"7 Northaw Rd West, Northaw, Potters Bar, Herts. EN6 4NW" },
   "PramaStars":        { place:"Stanstead Abbotts Parish Hall", address:"Roydon Road, Stanstead Abbotts. SG12 8EZ" },
-  "St. Andrews":       { place:"St. Andrews Centre",            address:"St Andrew St, Hertford. SG14 1HZ" },
+  "St. Andrews":       { place:"St. Andrews Centre",            address:"St Andrew St, Hertford. SG14 1HZ", maps:"Hertford St Andrew Church" },
   "Stanstead Abbotts": { place:"Stanstead Abbotts Parish Hall", address:"Roydon Road, Stanstead Abbotts. SG12 8EZ" },
   "Water Lane":        { place:"Herts & Essex Sports Centre",   address:"Beldams Lane, Bishops Stortford. CM23 5LH", start:"19:00" },
 };
@@ -1032,9 +1032,11 @@ function icsLocal(iso, hhmm, addMinutes){
   return d.toISOString().slice(0, 16).replace(/[-:]/g, '') + '00';
 }
 
+// Some halls aren't findable under their own name — `maps` overrides the search
+// term where the address alone doesn't land on the right pin.
 function mapsLink(v){
   return 'https://www.google.com/maps/search/?api=1&query=' +
-         encodeURIComponent(`${v.place}, ${v.address}`);
+         encodeURIComponent(v.maps || `${v.place}, ${v.address}`);
 }
 
 // The season runs September to April, so it straddles the BST/GMT switch. Times
