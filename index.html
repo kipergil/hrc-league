@@ -310,6 +310,14 @@
     text-transform:uppercase;
     letter-spacing:0.06em;
   }
+  .agenda-date .time{
+    display:block;
+    margin-top:4px;
+    font-size:10px;
+    font-weight:700;
+    color:var(--court);
+    white-space:nowrap;
+  }
   .agenda-body{flex:1;min-width:0;}
   .agenda-top{
     display:flex;
@@ -482,6 +490,9 @@
     .agenda-row.highlight{margin:0 -6px;padding:13px 6px;}
     .agenda-row.upcoming{margin:0 -2px;padding:13px 6px;}
     .agenda-date{flex:0 0 38px;}
+    /* 10px "7:30pm" measures ~36px in a 38px column; a touch smaller leaves
+       room for a font that renders slightly wide */
+    .agenda-date .time{font-size:9.5px;margin-top:3px;}
     .agenda-playerlist{gap:4px;margin-top:6px;}
     .player-chip{font-size:11px;padding:2px 5px;}
     .players-label{font-size:9px;letter-spacing:0.06em;}
@@ -564,6 +575,7 @@
     .agenda-date{flex:0 0 20mm;}
     .agenda-date .num{font-size:17pt;color:#000;}
     .agenda-date .dow-label{font-size:9.5pt;color:#333;}
+    .agenda-date .time{font-size:9.5pt;color:#000;font-weight:700;margin-top:1.5mm;}
     .agenda-team{font-size:14pt;color:#000;}
     .agenda-vs{color:#555;}
     .agenda-ha{
@@ -1223,6 +1235,12 @@ function restoreAfterPrint(){
   openBeforePrint = null;
 }
 
+// "19:30" reads as 7:30pm on the page; the data keeps 24h so the .ics can use it
+function timeLabel(hhmm){
+  const [h, m] = hhmm.split(':').map(Number);
+  return `${h % 12 || 12}:${String(m).padStart(2, '0')}${h >= 12 ? 'pm' : 'am'}`;
+}
+
 function formatDate(iso){
   const d = new Date(iso+"T00:00:00");
   return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
@@ -1296,13 +1314,14 @@ function renderMonths(){
         const isUpcoming = upcomingMatch && m.date === upcomingMatch.date &&
           (m.kind === 'cup' ? !upcomingMatch.team : m.team === upcomingMatch.team);
 
-        let matchupHtml, badgeHtml, noteHtml, playersHtml = '', mapHtml = '';
+        let matchupHtml, badgeHtml, noteHtml, playersHtml = '', mapHtml = '', startLabel = '';
         if(m.kind === 'league'){
           const [homeTeam, awayTeam] = m.ha === 'Home' ? [m.team, m.opponent] : [m.opponent, m.team];
           matchupHtml = `${homeTeam} <span class="agenda-vs">vs</span> ${awayTeam}`;
           badgeHtml = `<span class="agenda-ha ${m.ha.toLowerCase()}">${m.ha}</span>`;
           // the match is at whoever is at home, so an away fixture points at theirs
           const venue = venues[clubOf(homeTeam)];
+          startLabel = timeLabel((venue && venue.start) || DEFAULT_START);
           if(venue){
             const where = `${venue.place}, ${venue.address}`;
             mapHtml = `<a class="map-link" href="${attr(mapsLink(venue))}"` +
@@ -1349,6 +1368,7 @@ function renderMonths(){
           <div class="agenda-date">
             <span class="num">${dayNum}</span>
             <span class="dow-label">${dowLabel}</span>
+            ${startLabel ? `<span class="time">${startLabel}</span>` : ''}
           </div>
           <div class="agenda-body">
             ${isUpcoming ? `<span class="upcoming-badge">🏓 Next up</span><br>` : ``}
