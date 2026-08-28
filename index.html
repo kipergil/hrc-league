@@ -485,6 +485,19 @@
     .agenda-playerlist{gap:4px;margin-top:6px;}
     .player-chip{font-size:11px;padding:2px 5px;}
     .players-label{font-size:9px;letter-spacing:0.06em;}
+
+    /* keep both actions on one row; only the horizontal padding gives way, so
+       the buttons stay as tall — and as tappable — as they are on desktop */
+    .picker-actions{gap:6px;}
+    .action-btn{font-size:12px;padding:9px 10px;}
+    .action-btn::before{margin-right:5px;}
+  }
+
+  /* 320px phones: one more step, rather than shrinking every handset for the
+     sake of the narrowest one */
+  @media screen and (max-width:340px){
+    .action-btn{font-size:11.5px;padding:9px 7px;}
+    .action-btn::before{margin-right:4px;}
   }
 
   /* ---- Print: a clean team sheet, nothing but the fixtures ---- */
