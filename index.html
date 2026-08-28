@@ -847,7 +847,15 @@ function buildPills(){
   const everyone = document.createElement('button');
   everyone.className = 'pill everyone active';
   everyone.textContent = 'Everyone';
-  everyone.onclick = () => { selected = null; saveSelectedTeam(selected); render(); };
+  // "Everyone" means everyone: clear the player filter too, rather than leaving
+  // one name applied to a view that says it's showing all four teams.
+  everyone.onclick = () => {
+    selected = null;
+    selectedPlayer = null;
+    saveSelectedTeam(selected);
+    saveSelectedPlayer(selectedPlayer);
+    render();
+  };
   row.appendChild(everyone);
 
   teams.forEach(name => {
