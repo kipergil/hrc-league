@@ -694,6 +694,32 @@ const cupRounds = [
   { date:"2027-04-19", cupType:"Finals" },
 ];
 
+// Venues and start times, from each club's page at hertsttl.org.uk/Clubz.asp.
+// Matches are played at the home club's venue, so an away fixture takes the
+// opponent's. 7.30pm is the league norm; Water Lane and Furneux Pelham both ask
+// on their pages for 7pm starts.
+const DEFAULT_START = '19:30';
+const MATCH_MINUTES = 150;   // not published anywhere; Water Lane's hall booking
+                             // (7-10pm) is the only evidence of a match's length
+
+const venues = {
+  "Cheshunt":          { place:"Thundridge Village Hall",       address:"Ermine Street, Thundridge, Herts. SG12 0SY" },
+  "Ellenborough":      { place:"Ellenborough Club",             address:"Craddock Road, Enfield. EN1 3SP" },
+  "Furneux Pelham":    { place:"Furneux Pelham Village Hall",   address:"Barleycroft End, Furneux Pelham. SG9 0LL", start:"19:00" },
+  "Grundy Park":       { place:"Laura Trott Leisure Centre",    address:"44 Windmill Lane, Cheshunt, Herts. EN8 9AJ" },
+  "HRC":               { place:"Bushby Hall",                   address:"8 Wharf Road, Wormley, Herts. EN10 6HX" },
+  "Kidston":           { place:"Kidston Institute",             address:"7 Northaw Rd West, Northaw, Potters Bar, Herts. EN6 4NW" },
+  "PramaStars":        { place:"Stanstead Abbotts Parish Hall", address:"Roydon Road, Stanstead Abbotts. SG12 8EZ" },
+  "St. Andrews":       { place:"St. Andrews Centre",            address:"St Andrew St, Hertford. SG14 1HZ" },
+  "Stanstead Abbotts": { place:"Stanstead Abbotts Parish Hall", address:"Roydon Road, Stanstead Abbotts. SG12 8EZ" },
+  "Water Lane":        { place:"Herts & Essex Sports Centre",   address:"Beldams Lane, Bishops Stortford. CM23 5LH", start:"19:00" },
+};
+
+// "Water Lane C" and "HRC A" are teams; the venue belongs to the club.
+function clubOf(team){
+  return team.replace(/\s+[A-Z]$/, '');
+}
+
 const teams = ["HRC A","HRC B","HRC C","HRC D"];
 
 const months = [
@@ -976,6 +1002,43 @@ function icsFold(line){
 
 function icsDay(iso){ return iso.replace(/-/g, ''); }
 
+// Wall-clock arithmetic only — the offset is carried by TZID, so this must not
+// do any timezone conversion of its own. UTC methods give date maths without it.
+function icsLocal(iso, hhmm, addMinutes){
+  const [h, mi] = hhmm.split(':').map(Number);
+  const d = new Date(`${iso}T00:00:00Z`);
+  d.setUTCMinutes(d.getUTCMinutes() + h * 60 + mi + (addMinutes || 0));
+  return d.toISOString().slice(0, 16).replace(/[-:]/g, '') + '00';
+}
+
+function mapsLink(v){
+  return 'https://www.google.com/maps/search/?api=1&query=' +
+         encodeURIComponent(`${v.place}, ${v.address}`);
+}
+
+// The season runs September to April, so it straddles the BST/GMT switch. Times
+// are anchored to Europe/London rather than a fixed offset, or half the fixtures
+// would land an hour out.
+const VTIMEZONE = [
+  'BEGIN:VTIMEZONE',
+  'TZID:Europe/London',
+  'BEGIN:DAYLIGHT',
+  'TZOFFSETFROM:+0000',
+  'TZOFFSETTO:+0100',
+  'TZNAME:BST',
+  'DTSTART:19700329T010000',
+  'RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU',
+  'END:DAYLIGHT',
+  'BEGIN:STANDARD',
+  'TZOFFSETFROM:+0100',
+  'TZOFFSETTO:+0000',
+  'TZNAME:GMT',
+  'DTSTART:19701025T020000',
+  'RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU',
+  'END:STANDARD',
+  'END:VTIMEZONE'
+];
+
 // An all-day DTEND is exclusive, so a single-day event ends the following day.
 function icsDayAfter(iso){
   const d = new Date(iso + 'T00:00:00Z');
@@ -989,7 +1052,7 @@ function icsDayAfter(iso){
 function calendarEvents(){
   const byKey = new Map();
 
-  const add = (date, summary, description) => {
+  const add = (date, summary, description, extra) => {
     const key = `${date}|${summary}`;
     const seen = byKey.get(key);
     if(seen){
@@ -997,15 +1060,23 @@ function calendarEvents(){
       seen.description = [...merged].join('\n');
       return;
     }
-    byKey.set(key, { date, summary, description });
+    byKey.set(key, Object.assign({ date, summary, description }, extra));
   };
 
   // One line per HRC team, so a merged derby still says which line-up is whose.
   visibleLeagueMatches().forEach(m => {
     const [home, away] = m.ha === 'Home' ? [m.team, m.opponent] : [m.opponent, m.team];
-    add(m.date, `${home} vs ${away}`,
+    const venue = venues[clubOf(home)];
+    const detail = [
       `${m.team} (${m.ha.toLowerCase()}) — ` +
-      (m.players ? m.players.join(', ') : 'line-up not announced yet'));
+      (m.players ? m.players.join(', ') : 'line-up not announced yet')
+    ];
+    if(venue) detail.push(`${venue.place}, ${venue.address}`, mapsLink(venue));
+
+    add(m.date, `${home} vs ${away}`, detail.join('\n'), {
+      start: (venue && venue.start) || DEFAULT_START,
+      location: venue ? `${venue.place}, ${venue.address}` : ''
+    });
   });
 
   visibleCupRounds().forEach(r => {
@@ -1029,7 +1100,8 @@ function buildICS(){
     'PRODID:-//HRC//League Calendar//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
-    `X-WR-CALNAME:${icsEscape('HRC League — ' + filterLabel())}`
+    `X-WR-CALNAME:${icsEscape('HRC League — ' + filterLabel())}`,
+    ...VTIMEZONE
   ];
 
   calendarEvents().forEach(ev => {
@@ -1037,12 +1109,27 @@ function buildICS(){
       'BEGIN:VEVENT',
       // stable, so re-importing updates the entry instead of duplicating it
       `UID:${slug(ev.date + '-' + ev.summary)}@hrc-league`,
-      `DTSTAMP:${stamp}`,
-      `DTSTART;VALUE=DATE:${icsDay(ev.date)}`,
-      `DTEND;VALUE=DATE:${icsDayAfter(ev.date)}`,
-      `SUMMARY:${icsEscape(ev.summary)}`,
+      `DTSTAMP:${stamp}`
+    );
+
+    if(ev.start){
+      lines.push(
+        `DTSTART;TZID=Europe/London:${icsLocal(ev.date, ev.start)}`,
+        `DTEND;TZID=Europe/London:${icsLocal(ev.date, ev.start, MATCH_MINUTES)}`
+      );
+    } else {
+      // cup rounds: the grids give the week, not the night, so these stay all-day
+      lines.push(
+        `DTSTART;VALUE=DATE:${icsDay(ev.date)}`,
+        `DTEND;VALUE=DATE:${icsDayAfter(ev.date)}`,
+        'TRANSP:TRANSPARENT'
+      );
+    }
+
+    lines.push(`SUMMARY:${icsEscape(ev.summary)}`);
+    if(ev.location) lines.push(`LOCATION:${icsEscape(ev.location)}`);
+    lines.push(
       `DESCRIPTION:${icsEscape(ev.description)}`,
-      'TRANSP:TRANSPARENT',   // an all-day fixture shouldn't mark the whole day busy
       'END:VEVENT'
     );
   });
