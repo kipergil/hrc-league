@@ -191,8 +191,37 @@
   .picker-section{margin-top:18px;padding-top:16px;border-top:1px dashed var(--line);}
   .picker-section.hidden{display:none;}
 
-  .summary{
+  .picker-foot{
     margin-top:14px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:12px 16px;
+  }
+
+  .print-btn{
+    flex:0 0 auto;
+    margin-left:auto;   /* stays right even once the summary wraps it onto its own line */
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    font-weight:600;
+    font-size:13.5px;
+    padding:9px 16px;
+    border-radius:999px;
+    border:1.5px solid var(--court);
+    background:var(--white);
+    color:var(--court);
+    cursor:pointer;
+    transition:background-color .15s ease, color .15s ease;
+  }
+  .print-btn::before{content:"\1F5A8\FE0F";margin-right:7px;}
+  .print-btn:hover{background:var(--court);color:var(--white);}
+  .print-btn:focus-visible{outline:2px solid var(--ball);outline-offset:2px;}
+
+  .print-header{display:none;}
+
+  .summary{
+    flex:1 1 240px;
     font-size:14px;
     color:var(--muted);
     min-height:20px;
@@ -423,6 +452,92 @@
   }
   .footer-links a:hover{color:var(--ball);}
   .footer-note{color:var(--muted);}
+
+  /* ---- Print: a clean team sheet, nothing but the fixtures ---- */
+  @media print{
+    @page{margin:14mm;}
+
+    body{
+      background:#fff;
+      color:#000;
+      padding:0;
+      font-size:12pt;
+      -webkit-print-color-adjust:exact;
+      print-color-adjust:exact;
+    }
+    .hero, .picker, .legend, footer, .print-btn, .month-chevron{display:none !important;}
+    .wrap{max-width:none;padding:0;}
+
+    .print-header{
+      display:block;
+      margin:0 0 10mm;
+      padding-bottom:4mm;
+      border-bottom:2.5pt solid #000;
+    }
+    .print-header h2{
+      font-family:'Archivo Black','Arial Black',Impact,sans-serif;
+      font-size:20pt;
+      margin:0 0 3mm;
+      letter-spacing:-0.01em;
+    }
+    .print-scope{font-size:14pt;font-weight:700;margin-bottom:1.5mm;}
+    .print-meta{font-size:10.5pt;color:#444;}
+
+    /* the calendar skips offscreen content to stay fast; that would blank the print */
+    .agenda{content-visibility:visible !important;contain:none !important;max-width:none;}
+    .month{margin:0 0 7mm;break-inside:auto;}
+    .month.empty{display:none !important;}
+    /* months the reader collapsed still belong on the sheet */
+    details:not([open]) > *:not(summary){display:block !important;}
+
+    .month > summary{
+      font-size:15pt;
+      margin-bottom:2mm;
+      padding-bottom:1mm;
+      border-bottom:1pt solid #999;
+      break-after:avoid;
+      color:#000;
+    }
+    .month > summary small{font-size:10pt;color:#555;}
+
+    .agenda-row{
+      break-inside:avoid;
+      page-break-inside:avoid;
+      contain:none !important;
+      border-bottom:0.5pt solid #ccc;
+      padding:3.5mm 0;
+      margin:0;
+      background:none !important;
+      opacity:1 !important;
+      gap:6mm;
+    }
+    .agenda-row.upcoming, .agenda-row.highlight{border:none;border-bottom:0.5pt solid #ccc;}
+    .upcoming-badge{display:none;}
+
+    .agenda-date{flex:0 0 20mm;}
+    .agenda-date .num{font-size:17pt;color:#000;}
+    .agenda-date .dow-label{font-size:9.5pt;color:#333;}
+    .agenda-team{font-size:14pt;color:#000;}
+    .agenda-vs{color:#555;}
+    .agenda-ha{
+      font-size:9pt;
+      border:0.8pt solid #666;
+      background:none !important;
+      color:#000 !important;
+      padding:0.6mm 2mm;
+    }
+    .agenda-note{font-size:11pt;color:#333;}
+    .players-label{font-size:9.5pt;color:#000;}
+    .agenda-playerlist{margin-top:2mm;gap:2.5mm;}
+    .player-chip{
+      font-size:12pt;
+      background:none !important;
+      border:0.8pt solid #333;
+      color:#000 !important;
+      padding:0.8mm 2.5mm;
+    }
+    .player-chip.me{border-width:1.6pt;font-weight:800;}
+  }
 </style>
 </head>
 <body>
@@ -449,7 +564,10 @@
           <label class="picker-label" for="playerSelect">Which player?</label>
           <select class="player-select" id="playerSelect"></select>
         </div>
-        <div class="summary" id="summary">Showing all fixtures for all four HRC teams.</div>
+        <div class="picker-foot">
+          <div class="summary" id="summary">Showing all fixtures for all four HRC teams.</div>
+          <button type="button" class="print-btn" id="printBtn">Print this list</button>
+        </div>
       </div>
     </div>
 
@@ -458,6 +576,8 @@
       <span><span class="dot away"></span> Away fixture</span>
       <span><span class="dot cup"></span> Cup round</span>
     </div>
+
+    <div class="print-header" id="printHeader"></div>
 
     <div id="months"></div>
   </div>
@@ -784,6 +904,42 @@ function renderSummary(){
   el.innerHTML = `<strong>${selected}</strong> has <strong>${leagueCount + cupCount}</strong> fixtures this season: ${leagueCount} league, ${cupCount} cup.`;
 }
 
+// Who the sheet is for, in words — the printed page has no filter controls to read.
+function filterLabel(){
+  if(selectedPlayer && selected) return `${selected} \u2014 ${selectedPlayer}`;
+  if(selectedPlayer) return selectedPlayer;
+  if(selected) return selected;
+  return 'All four HRC teams';
+}
+
+function renderPrintHeader(){
+  const total = visibleLeagueMatches().length + visibleCupRounds().length;
+  const printed = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('printHeader').innerHTML = `
+    <h2>HRC League Calendar</h2>
+    <div class="print-scope">${filterLabel()}</div>
+    <div class="print-meta">${total} fixture${total!==1?'s':''} \u00b7 2026-27 season \u00b7 printed ${printed}</div>
+  `;
+}
+
+// A collapsed month is not rendered by the browser, so it would silently vanish
+// from the printout. Open everything for the print, then put it back.
+let openBeforePrint = null;
+
+function expandForPrint(){
+  const months = [...document.querySelectorAll('.month')];
+  // beforeprint can fire twice for one print; only the first capture is the
+  // reader's own state, so don't overwrite it with the already-expanded one.
+  if(!openBeforePrint) openBeforePrint = months.map(m => m.open);
+  months.forEach(m => { m.open = true; });
+}
+
+function restoreAfterPrint(){
+  if(!openBeforePrint) return;
+  document.querySelectorAll('.month').forEach((m, i) => { m.open = openBeforePrint[i]; });
+  openBeforePrint = null;
+}
+
 function formatDate(iso){
   const d = new Date(iso+"T00:00:00");
   return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
@@ -806,6 +962,7 @@ function render(){
 
   buildPlayerSelect();
   renderSummary();
+  renderPrintHeader();
   renderMonths();
 }
 
@@ -843,6 +1000,7 @@ function renderMonths(){
     agenda.className = 'agenda';
 
     if(monthMatches.length === 0){
+      monthEl.classList.add('empty');
       agenda.innerHTML = `<div class="agenda-row"><div class="agenda-body"><span class="agenda-players">No fixtures this month.</span></div></div>`;
     } else {
       monthMatches.forEach(m => {
@@ -919,6 +1077,10 @@ function renderMonths(){
 
 buildPills();
 bindPlayerSelect();
+document.getElementById('printBtn').addEventListener('click', () => window.print());
+// also covers Ctrl/Cmd-P, not just the button
+window.addEventListener('beforeprint', expandForPrint);
+window.addEventListener('afterprint', restoreAfterPrint);
 render();
 </script>
 </body>
