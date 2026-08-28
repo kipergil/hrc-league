@@ -119,6 +119,13 @@ selected. That's expected, not a bug.
 HRC A and HRC B are in the Premier Division, HRC C in Division One, HRC D in
 Division Two.
 
+Club pages live at `hertsttl.org.uk/Clubz.asp?Club=<name>` and carry the venue
+addresses and start times in §5. There is also a
+[Google Maps list of every venue](https://maps.app.goo.gl/2CZiqXpNb9RbLioFA?g_st=i)
+("Herts TTL – Venues"), kept by Mustafa and linked from the page footer — handy
+for a season overview, though the per-fixture pins are built from the addresses
+below rather than from that list.
+
 Each grid is a table of teams (rows) against weeks (columns). Every fixture cell
 carries its own handler, which is the reliable way to read the grid — column
 counting is not:
