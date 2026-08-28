@@ -343,6 +343,23 @@
     border-radius:999px;
     font-weight:700;
   }
+  .map-link{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    font-size:12px;
+    line-height:1;
+    text-decoration:none;
+    border:1px solid var(--line);
+    background:var(--white);
+    transition:border-color .15s ease, background-color .15s ease, transform .15s ease;
+  }
+  .map-link:hover{border-color:var(--ball);background:var(--ball-soft);transform:scale(1.1);}
+  .map-link:focus-visible{outline:2px solid var(--ball);outline-offset:2px;}
+
   .agenda-ha.home{background:#EAF4EF;color:var(--court);}
   .agenda-ha.away{background:var(--ball-soft);color:var(--ball);}
   .agenda-ha.cup{background:var(--gold-soft);color:var(--gold);}
@@ -534,6 +551,7 @@
       color:#000 !important;
       padding:0.6mm 2mm;
     }
+    .map-link{display:none !important;}
     .agenda-note{font-size:11pt;color:#333;}
     .players-label{font-size:9.5pt;color:#000;}
     .agenda-playerlist{margin-top:2mm;gap:2.5mm;}
@@ -972,6 +990,15 @@ function renderPrintHeader(){
 // are all-day: the league publishes dates, not start times, and inventing one
 // would put fixtures at the wrong hour in everyone's diary.
 
+// venue names carry an ampersand ("Herts & Essex"), and the maps URL carries
+// several, so anything going into an attribute needs escaping
+function attr(text){
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;');
+}
+
 function slug(text){
   return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
@@ -1241,11 +1268,20 @@ function renderMonths(){
         const isUpcoming = upcomingMatch && m.date === upcomingMatch.date &&
           (m.kind === 'cup' ? !upcomingMatch.team : m.team === upcomingMatch.team);
 
-        let matchupHtml, badgeHtml, noteHtml, playersHtml = '';
+        let matchupHtml, badgeHtml, noteHtml, playersHtml = '', mapHtml = '';
         if(m.kind === 'league'){
           const [homeTeam, awayTeam] = m.ha === 'Home' ? [m.team, m.opponent] : [m.opponent, m.team];
           matchupHtml = `${homeTeam} <span class="agenda-vs">vs</span> ${awayTeam}`;
           badgeHtml = `<span class="agenda-ha ${m.ha.toLowerCase()}">${m.ha}</span>`;
+          // the match is at whoever is at home, so an away fixture points at theirs
+          const venue = venues[clubOf(homeTeam)];
+          if(venue){
+            const where = `${venue.place}, ${venue.address}`;
+            mapHtml = `<a class="map-link" href="${attr(mapsLink(venue))}"` +
+              ` target="_blank" rel="noopener"` +
+              ` title="${attr(where)}"` +
+              ` aria-label="${attr('Directions to ' + where + ' — opens Google Maps')}">📍</a>`;
+          }
           noteHtml = '';
           if(m.players){
             const chips = m.players
@@ -1290,6 +1326,7 @@ function renderMonths(){
             <div class="agenda-top">
               <span class="agenda-team">${matchupHtml}</span>
               ${badgeHtml}
+              ${mapHtml}
             </div>
             ${playersHtml}
             ${noteHtml ? `<div class="agenda-players">${noteHtml}</div>` : ''}
