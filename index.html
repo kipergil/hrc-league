@@ -200,9 +200,14 @@
     gap:12px 16px;
   }
 
-  .print-btn{
+  .picker-actions{
     flex:0 0 auto;
     margin-left:auto;   /* stays right even once the summary wraps it onto its own line */
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .action-btn{
     font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
     font-weight:600;
     font-size:13.5px;
@@ -212,11 +217,14 @@
     background:var(--white);
     color:var(--court);
     cursor:pointer;
+    white-space:nowrap;
     transition:background-color .15s ease, color .15s ease;
   }
-  .print-btn::before{content:"\1F5A8\FE0F";margin-right:7px;}
-  .print-btn:hover{background:var(--court);color:var(--white);}
-  .print-btn:focus-visible{outline:2px solid var(--ball);outline-offset:2px;}
+  .action-btn::before{margin-right:7px;}
+  .action-btn:hover{background:var(--court);color:var(--white);}
+  .action-btn:focus-visible{outline:2px solid var(--ball);outline-offset:2px;}
+  .print-btn::before{content:"\1F5A8\FE0F";}
+  .cal-btn::before{content:"\1F4C5";}
 
   .print-header{display:none;}
 
@@ -566,7 +574,10 @@
         </div>
         <div class="picker-foot">
           <div class="summary" id="summary">Showing all fixtures for all four HRC teams.</div>
-          <button type="button" class="print-btn" id="printBtn">Print this list</button>
+          <div class="picker-actions">
+            <button type="button" class="action-btn cal-btn" id="calBtn">Add to calendar</button>
+            <button type="button" class="action-btn print-btn" id="printBtn">Print this list</button>
+          </div>
         </div>
       </div>
     </div>
@@ -836,7 +847,15 @@ function buildPills(){
   const everyone = document.createElement('button');
   everyone.className = 'pill everyone active';
   everyone.textContent = 'Everyone';
-  everyone.onclick = () => { selected = null; saveSelectedTeam(selected); render(); };
+  // "Everyone" means everyone: clear the player filter too, rather than leaving
+  // one name applied to a view that says it's showing all four teams.
+  everyone.onclick = () => {
+    selected = null;
+    selectedPlayer = null;
+    saveSelectedTeam(selected);
+    saveSelectedPlayer(selectedPlayer);
+    render();
+  };
   row.appendChild(everyone);
 
   teams.forEach(name => {
@@ -920,6 +939,128 @@ function renderPrintHeader(){
     <div class="print-scope">${filterLabel()}</div>
     <div class="print-meta">${total} fixture${total!==1?'s':''} \u00b7 2026-27 season \u00b7 printed ${printed}</div>
   `;
+}
+
+// ---- Calendar export (.ics) ----
+// One file that Google Calendar, Apple Calendar and Outlook all import. Events
+// are all-day: the league publishes dates, not start times, and inventing one
+// would put fixtures at the wrong hour in everyone's diary.
+
+function slug(text){
+  return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+function icsEscape(text){
+  return String(text)
+    .replace(/\\/g, '\\\\')
+    .replace(/;/g, '\;')
+    .replace(/,/g, '\\,')
+    .replace(/\r?\n/g, '\\n');
+}
+
+// RFC 5545 caps a line at 75 octets; longer ones continue after CRLF + a space.
+function icsFold(line){
+  const enc = new TextEncoder();
+  if(enc.encode(line).length <= 75) return line;
+  const parts = [];
+  let cur = '', bytes = 0;
+  for(const ch of Array.from(line)){
+    const n = enc.encode(ch).length;
+    if(bytes + n > (parts.length ? 74 : 75)){ parts.push(cur); cur = ''; bytes = 0; }
+    cur += ch;
+    bytes += n;
+  }
+  if(cur) parts.push(cur);
+  return parts.join('\r\n ');
+}
+
+function icsDay(iso){ return iso.replace(/-/g, ''); }
+
+// An all-day DTEND is exclusive, so a single-day event ends the following day.
+function icsDayAfter(iso){
+  const d = new Date(iso + 'T00:00:00Z');
+  d.setUTCDate(d.getUTCDate() + 1);
+  return icsDay(d.toISOString().slice(0, 10));
+}
+
+// Whatever the filters currently show, as calendar entries. An HRC-vs-HRC derby
+// is one match listed under both teams, so entries are merged on date + title:
+// two identical all-day blocks would just be noise in someone's diary.
+function calendarEvents(){
+  const byKey = new Map();
+
+  const add = (date, summary, description) => {
+    const key = `${date}|${summary}`;
+    const seen = byKey.get(key);
+    if(seen){
+      const merged = new Set([...seen.description.split('\n'), ...description.split('\n')]);
+      seen.description = [...merged].join('\n');
+      return;
+    }
+    byKey.set(key, { date, summary, description });
+  };
+
+  // One line per HRC team, so a merged derby still says which line-up is whose.
+  visibleLeagueMatches().forEach(m => {
+    const [home, away] = m.ha === 'Home' ? [m.team, m.opponent] : [m.opponent, m.team];
+    add(m.date, `${home} vs ${away}`,
+      `${m.team} (${m.ha.toLowerCase()}) — ` +
+      (m.players ? m.players.join(', ') : 'line-up not announced yet'));
+  });
+
+  visibleCupRounds().forEach(r => {
+    const lineups = cupLineups(r);
+    add(r.date, `${r.cupType} Cup`, [
+      lineups.length
+        ? lineups.map(l => `${l.team} — ${l.players.join(', ')}`).join('\n')
+        : 'Applies to all HRC teams',
+      'Week commencing — the exact match date is set by the league.'
+    ].join('\n'));
+  });
+
+  return [...byKey.values()].sort((a, b) => a.date.localeCompare(b.date));
+}
+
+function buildICS(){
+  const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
+  const lines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//HRC//League Calendar//EN',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    `X-WR-CALNAME:${icsEscape('HRC League — ' + filterLabel())}`
+  ];
+
+  calendarEvents().forEach(ev => {
+    lines.push(
+      'BEGIN:VEVENT',
+      // stable, so re-importing updates the entry instead of duplicating it
+      `UID:${slug(ev.date + '-' + ev.summary)}@hrc-league`,
+      `DTSTAMP:${stamp}`,
+      `DTSTART;VALUE=DATE:${icsDay(ev.date)}`,
+      `DTEND;VALUE=DATE:${icsDayAfter(ev.date)}`,
+      `SUMMARY:${icsEscape(ev.summary)}`,
+      `DESCRIPTION:${icsEscape(ev.description)}`,
+      'TRANSP:TRANSPARENT',   // an all-day fixture shouldn't mark the whole day busy
+      'END:VEVENT'
+    );
+  });
+
+  lines.push('END:VCALENDAR');
+  return lines.map(icsFold).join('\r\n') + '\r\n';
+}
+
+function downloadICS(){
+  const blob = new Blob([buildICS()], { type:'text/calendar;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `hrc-league-${slug(filterLabel()) || 'all'}.ics`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 // A collapsed month is not rendered by the browser, so it would silently vanish
@@ -1078,6 +1219,7 @@ function renderMonths(){
 buildPills();
 bindPlayerSelect();
 document.getElementById('printBtn').addEventListener('click', () => window.print());
+document.getElementById('calBtn').addEventListener('click', downloadICS);
 // also covers Ctrl/Cmd-P, not just the button
 window.addEventListener('beforeprint', expandForPrint);
 window.addEventListener('afterprint', restoreAfterPrint);
