@@ -233,6 +233,45 @@ club is at home — including HRC's away fixtures.
 All four HRC teams play home matches on **Wednesday**. A fixture on any other
 day is an away match, and the day tells you which club is hosting.
 
+### Venues and start times
+
+From each club's own page at `hertsttl.org.uk/Clubz.asp?Club=<name>`. The venue
+is a property of the **club**, so a fixture is played at whichever club is at
+home — the calendar export derives it the same way it derives the date.
+
+| Club | Venue | Start |
+|---|---|---|
+| Cheshunt | Thundridge Village Hall, Ermine Street, Thundridge, Herts. SG12 0SY | 7.30pm |
+| Ellenborough | Ellenborough Club, Craddock Road, Enfield. EN1 3SP | 7.30pm |
+| Furneux Pelham | Furneux Pelham Village Hall, Barleycroft End, Furneux Pelham. SG9 0LL | **7pm** |
+| Grundy Park | Laura Trott Leisure Centre, 44 Windmill Lane, Cheshunt, Herts. EN8 9AJ | 7.30pm |
+| **HRC** | Bushby Hall, 8 Wharf Road, Wormley, Herts. EN10 6HX | 7.30pm |
+| Kidston | Kidston Institute, 7 Northaw Rd West, Northaw, Potters Bar, Herts. EN6 4NW | 7.30pm |
+| PramaStars | Stanstead Abbotts Parish Hall, Roydon Road, Stanstead Abbotts. SG12 8EZ | 7.30pm |
+| St. Andrews | St. Andrews Centre, St Andrew St, Hertford. SG14 1HZ | 7.30pm |
+| Stanstead Abbotts | Stanstead Abbotts Parish Hall, Roydon Road, Stanstead Abbotts. SG12 8EZ | 7.30pm |
+| Water Lane | Herts & Essex Sports Centre, Beldams Lane, Bishops Stortford. CM23 5LH | **7pm** |
+
+7.30pm is the league norm and isn't stated on most club pages. Only two ask for
+something else, both in their own words:
+
+- **Water Lane** — "We have the hall from 7pm til 10pm on Wednesdays so, please,
+  all Water Lane home matches to start as close to 7pm as possible."
+- **Furneux Pelham** — "Please can all our home matches start at 7pm."
+
+Water Lane's page adds that on **Friday** nights they only have the hall until
+9pm. No HRC fixture is affected — every Water Lane team hosts on a Wednesday —
+but it would matter if a fixture were rearranged.
+
+PramaStars and Stanstead Abbotts share a venue, so a fixture against either is
+at the same hall. The St. Andrews Centre is behind St Andrew's Church — the
+club's page says so, but it's left out of the stored address to keep the Google
+Maps lookup clean.
+
+**Match length isn't published anywhere.** The calendar export blocks 2½ hours,
+which puts a 7.30pm start at 10pm; Water Lane's hall booking is the only
+evidence of a match's length. Treat it as an estimate, not a fact.
+
 ---
 
 ## 6. Season week calendar
