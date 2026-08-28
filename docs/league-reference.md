@@ -22,21 +22,21 @@ changes — the date and opponent are already correct.
 
 ```js
 { team:"HRC D", date:"2026-09-30", ha:"Home", opponent:"Furneux Pelham",
-  players:["Tony","Steve","Jake"] },
+  players:["Tony","Steve H","Jake S"] },
 ```
 
-- **Names are Title Case first names** (`Tony`, not `TONY`). Sheets arrive in
-  all caps (HRC B, HRC D) or as initials (HRC C) — convert both to the stored
-  form. §2 has the initials mapping.
+- **Names are first name plus surname initial**, Title Case, no full stop:
+  `Derek B`, `Jackie T`. Sheets arrive in all caps (HRC B, HRC D), as initials
+  (HRC C) or as a grid of full names (HRC A) — convert all of them to this form.
+  Surnames come from the club's own page (§2).
+- **This is what keeps the roster unambiguous.** It is a single global list, so
+  bare first names would merge two people into one filter entry. The club really
+  does have two Johns — Barnes (HRC C) and Chamberlain (HRC A) — and two Nashes,
+  and two Skulls. Initials separate all of them.
+- **If two players ever share a first name *and* an initial**, extend both to
+  whatever distinguishes them (`Dave Co`, `Dave Cr`), never just the newcomer.
 - **Spell each player identically everywhere.** The roster is built by collecting
-  distinct names across all fixtures, so a typo silently creates a new player,
-  and `"Tony"` and `"TONY"` would show as two.
-- **Watch for a first-name clash across teams.** The roster is global, so two
-  different Daves on two teams would merge into a single filter entry. Nothing
-  collides in the data today, but it is already one allocation away: HRC C has
-  John Barnes, and HRC A's grid lists a John Chambers who simply has no matches
-  yet. When it happens, disambiguate **both** (`John B`, `John C`) rather than
-  only the newcomer.
+  distinct names across all fixtures, so a typo silently creates a new player.
 - **Omit `players` entirely** when no line-up is published. Don't use `[]` — an
   empty array reads as "a line-up was published naming nobody", and the fixture
   would then be hidden from every player filter.
@@ -51,8 +51,8 @@ already carries two:
 
 ```js
 { date:"2026-09-14", cupType:"Divisional",
-  lineups:{ "HRC C":["Jackie","John","Dave"],
-            "HRC D":["Tony","Jake","Manuel"] } },
+  lineups:{ "HRC C":["Jackie T","John B","Dave C"],
+            "HRC D":["Tony","Jake S","Manuel"] } },
 ```
 
 With one team in view each list is labelled "Playing"; across all teams it's
@@ -82,10 +82,28 @@ Taken from the line-ups presently in the data.
 
 | Team | Players | Source |
 |---|---|---|
-| HRC A | Andrew, Chris, Derek, Kai, Neil, Paul, Sandy | team availability grid, first half only |
-| HRC B | Anuj, Gideon, Mustafa, Rai, Sunil | club sheet, first half only |
-| HRC C | Dave, Dudu, Faith, Jackie, John, Mike | captain's Division One sheet, first half only |
-| HRC D | Cathy, Jake, Jo, Manuel, Steve, Tony | HL 26-27 Version 1, first half only |
+| HRC A | Andrew N, Chris W, Derek B, Kai D, Neil S, Paul J, Sandy N | team availability grid, first half only |
+| HRC B | Anuj P, Gideon A, Mustafa K, Rai L, Sunil T | club sheet, first half only |
+| HRC C | Dave C, Dudu S, Faith F, Jackie T, John B, Mike R | captain's Division One sheet, first half only |
+| HRC D | Cathy P, Jake S, Jo S, **Manuel**, Steve H, **Tony** | HL 26-27 Version 1, first half only |
+
+### Surnames
+
+Surnames come from the club's own page,
+[`Clubz.asp?Club=HRC`](http://hertsttl.org.uk/Clubz.asp?Club=HRC), which lists
+every registered player by team. Two things to know when reading it:
+
+- **Registration is not selection.** The page groups players by the team they
+  registered with, and its own note says players "play up (or down)". Gideon Alao
+  and Mustafa Kipergil are registered HRC C but appear in HRC B's line-ups; Faith
+  Frankel is registered HRC D but plays HRC C; Jake Skull is registered HRC C but
+  plays HRC D. Take the surname from the page, the team from the line-up sheet.
+- **It is not exhaustive.** `Kai D`'s surname came from HRC A's own grid, not the
+  page. **Manuel** and **Tony** (HRC D) appear on no source at all and are still
+  stored without an initial — add theirs when someone can supply them.
+
+The page also shows each team's contact and confirms all four HRC teams play
+home matches on Wednesday.
 
 ### HRC A: a grid, not a list
 
@@ -100,11 +118,10 @@ row. Two things follow:
 - **Red blocks mean unavailable**, not selected. They span the dates a player is
   away, and no tick ever appears inside one — useful as a third check.
 
-**John Chambers is on the grid with 0 matches.** He therefore appears nowhere in
-the data and won't be offered in the filter. That is correct, not a missed
-column — but see the first-name clash warning in §1: HRC C already has a
-**John** (Barnes). The moment John Chambers is allocated a match, both need
-disambiguating.
+**John Chamberlain is on the grid with 0 matches.** He therefore appears nowhere
+in the data and won't be offered in the filter — correct, not a missed column.
+He is the reason HRC C's John Barnes is stored as `John B`: the two would
+otherwise collide the moment Chamberlain is picked.
 
 ### HRC C initials
 
@@ -113,16 +130,16 @@ the next one:
 
 | Initials | Full name | Stored as |
 |---|---|---|
-| DS | Dudu Souleiman *(captain)* | `Dudu` |
-| JB | John Barnes | `John` |
-| JT | Jackie Turner | `Jackie` |
-| DC | Dave Cocks | `Dave` |
-| MR | Mike Roberts | `Mike` |
-| FF | Faith Frances | `Faith` |
+| DS | Dudu Souleiman *(captain)* | `Dudu S` |
+| JB | John Barnes | `John B` |
+| JT | Jackie Turner | `Jackie T` |
+| DC | Dave Cocks | `Dave C` |
+| MR | Mike Roberts | `Mike R` |
+| FF | Faith Frankel | `Faith F` |
 
 `DS`/`DC` and `JB`/`JT` differ only in the second letter, so read them
-carefully. Faith's surname is hard to make out on the sheet — it doesn't matter
-while first names are stored, but check it before switching to full names.
+carefully. Faith's surname is illegible on the handwritten sheet — the club page
+settles it as **Frankel**, not Frances.
 
 A team with no line-ups anywhere hides the player dropdown entirely when it's
 selected. That's expected, not a bug.
