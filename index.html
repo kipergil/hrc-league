@@ -193,10 +193,12 @@
   }
 
   .picker-actions{
-    flex:0 0 auto;
+    flex:0 1 auto;
+    max-width:100%;     /* without this the pair sizes to max-content and overhangs a 320px screen */
     margin-left:auto;   /* stays right even once the summary wraps it onto its own line */
     display:flex;
     flex-wrap:wrap;
+    justify-content:flex-end;
     gap:8px;
   }
   .action-btn{
@@ -469,6 +471,21 @@
   }
   .footer-links a:hover{color:var(--ball);}
   .footer-note{color:var(--muted);}
+
+  /* ---- Narrow screens: buy the width back from the chrome, not the names ----
+     Full names need about 340px on one line; a 390px phone leaves 264px for
+     them. Trimming the date column, the row gutters and the chip padding closes
+     that gap without shrinking the type past legibility. Scoped to screen so it
+     can never reach the print sheet. */
+  @media screen and (max-width:600px){
+    .agenda-row{gap:9px;padding:13px 0;}
+    .agenda-row.highlight{margin:0 -6px;padding:13px 6px;}
+    .agenda-row.upcoming{margin:0 -2px;padding:13px 6px;}
+    .agenda-date{flex:0 0 38px;}
+    .agenda-playerlist{gap:4px;margin-top:6px;}
+    .player-chip{font-size:11px;padding:2px 5px;}
+    .players-label{font-size:9px;letter-spacing:0.06em;}
+  }
 
   /* ---- Print: a clean team sheet, nothing but the fixtures ---- */
   @media print{
