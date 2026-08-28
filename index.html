@@ -507,15 +507,17 @@ const matches = [
   { team:"HRC B", date:"2027-02-17", ha:"Home", opponent:"Ellenborough A" },
   { team:"HRC B", date:"2027-03-17", ha:"Home", opponent:"Kidston" },
   { team:"HRC B", date:"2027-04-14", ha:"Away", opponent:"Water Lane B" },
-  // HRC C (Division One)
-  { team:"HRC C", date:"2026-09-23", ha:"Home", opponent:"St. Andrews A" },
-  { team:"HRC C", date:"2026-09-28", ha:"Away", opponent:"Grundy Park B" },
-  { team:"HRC C", date:"2026-10-07", ha:"Home", opponent:"Water Lane C" },
-  { team:"HRC C", date:"2026-10-20", ha:"Away", opponent:"Cheshunt C" },
-  { team:"HRC C", date:"2026-10-28", ha:"Home", opponent:"PramaStars A" },
-  { team:"HRC C", date:"2026-11-05", ha:"Away", opponent:"Ellenborough B" },
-  { team:"HRC C", date:"2026-11-18", ha:"Home", opponent:"Grundy Park C" },
-  { team:"HRC C", date:"2026-12-08", ha:"Away", opponent:"Cheshunt B" },
+  // HRC C (Division One) — player allocations from the captain's Division One
+  // 2026-27 team sheet (first half only; 2027 fixtures to be decided nearer the time).
+  { team:"HRC C", date:"2026-09-23", ha:"Home", opponent:"St. Andrews A", players:["Dudu","Dave","Mike"] },
+  { team:"HRC C", date:"2026-09-28", ha:"Away", opponent:"Grundy Park B", players:["Faith","Jackie","Mike"] },
+  { team:"HRC C", date:"2026-10-07", ha:"Home", opponent:"Water Lane C", players:["Faith","Jackie","John"] },
+  { team:"HRC C", date:"2026-10-20", ha:"Away", opponent:"Cheshunt C", players:["Dudu","Faith","Dave"] },
+  { team:"HRC C", date:"2026-10-28", ha:"Home", opponent:"PramaStars A", players:["Dudu","John","Dave"] },
+  { team:"HRC C", date:"2026-11-05", ha:"Away", opponent:"Ellenborough B", players:["Dudu","John","Mike"] },
+  { team:"HRC C", date:"2026-11-18", ha:"Home", opponent:"Grundy Park C", players:["Dudu","John","Mike"] },
+  { team:"HRC C", date:"2026-12-08", ha:"Away", opponent:"Cheshunt B", players:["Faith","Jackie","Dave"] },
+  // Second half — no line-ups published yet.
   { team:"HRC C", date:"2027-01-14", ha:"Away", opponent:"St. Andrews A" },
   { team:"HRC C", date:"2027-01-20", ha:"Home", opponent:"Grundy Park B" },
   { team:"HRC C", date:"2027-01-27", ha:"Away", opponent:"Water Lane C" },
@@ -550,7 +552,7 @@ const matches = [
 // round can still name a line-up per team; rounds with none just say who they
 // apply to.
 const cupRounds = [
-  { date:"2026-09-14", cupType:"Divisional", lineups:{ "HRC D":["Tony","Jake","Manuel"] } },
+  { date:"2026-09-14", cupType:"Divisional", lineups:{ "HRC C":["Jackie","John","Dave"], "HRC D":["Tony","Jake","Manuel"] } },
   { date:"2026-10-12", cupType:"Divisional", lineups:{ "HRC D":["Manuel","Jake","Steve"] } },
   { date:"2026-11-09", cupType:"Divisional" },
   { date:"2026-12-14", cupType:"Finals" },

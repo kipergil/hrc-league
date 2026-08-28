@@ -75,8 +75,26 @@ Taken from the line-ups presently in the data.
 |---|---|---|
 | HRC A | *none yet* | — |
 | HRC B | Anuj, Gideon, Mustafa, Rai, Sunil | club sheet, first half only |
-| HRC C | *none yet* | — |
+| HRC C | Dave, Dudu, Faith, Jackie, John, Mike | captain's Division One sheet, first half only |
 | HRC D | Cathy, Jake, Jo, Manuel, Steve, Tony | HL 26-27 Version 1, first half only |
+
+### HRC C initials
+
+The captain's sheet allocates players by initials. Keep this mapping to decode
+the next one:
+
+| Initials | Full name | Stored as |
+|---|---|---|
+| DS | Dudu Souleiman *(captain)* | `Dudu` |
+| JB | John Barnes | `John` |
+| JT | Jackie Turner | `Jackie` |
+| DC | Dave Cocks | `Dave` |
+| MR | Mike Roberts | `Mike` |
+| FF | Faith Frances | `Faith` |
+
+`DS`/`DC` and `JB`/`JT` differ only in the second letter, so read them
+carefully. Faith's surname is hard to make out on the sheet — it doesn't matter
+while first names are stored, but check it before switching to full names.
 
 A team with no line-ups anywhere hides the player dropdown entirely when it's
 selected. That's expected, not a bug.
@@ -300,7 +318,15 @@ source exactly.
 7. **Check in a browser:** pick the team, then each player, and confirm the
    summary counts match the sheet.
 
-### Still on week-commencing dates
+### Outstanding
 
-Nothing — all four teams now use real match dates. Second-half line-ups are
-outstanding for HRC B and HRC D, and HRC A and HRC C have none at all.
+Dates are complete: all four teams use real match dates, and every fixture
+matches the league source.
+
+Line-ups still to come:
+
+- **HRC A** — none at all, either half.
+- **HRC B, C, D** — second half only. HRC C's sheet notes that 2027 fixtures are
+  "to be decided nearer the time", so expect those sheets late.
+- **Cup rounds** — only the first Divisional round has line-ups (HRC C and
+  HRC D). The rest are unassigned.
