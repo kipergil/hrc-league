@@ -22,19 +22,17 @@ changes — the date and opponent are already correct.
 
 ```js
 { team:"HRC D", date:"2026-09-30", ha:"Home", opponent:"Furneux Pelham",
-  players:["Tony M","Steve H","Jake S"] },
+  players:["Tony Martin","Steve Hooker","Jake Skull"] },
 ```
 
-- **Names are first name plus surname initial**, Title Case, no full stop:
-  `Derek B`, `Jackie T`. Sheets arrive in all caps (HRC B, HRC D), as initials
-  (HRC C) or as a grid of full names (HRC A) — convert all of them to this form.
-  Surnames come from the club's own page (§2).
+- **Names are stored in full**, Title Case: `Derek Balding`, `Jackie Turner`.
+  Sheets arrive in all caps (HRC B, HRC D), as initials (HRC C) or as a grid
+  (HRC A) — convert all of them to this form. Surnames come from the club's own
+  page (§2).
 - **This is what keeps the roster unambiguous.** It is a single global list, so
   bare first names would merge two people into one filter entry. The club really
   does have two Johns — Barnes (HRC C) and Chamberlain (HRC A) — and two Nashes,
-  and two Skulls. Initials separate all of them.
-- **If two players ever share a first name *and* an initial**, extend both to
-  whatever distinguishes them (`Dave Co`, `Dave Cr`), never just the newcomer.
+  and two Skulls.
 - **Spell each player identically everywhere.** The roster is built by collecting
   distinct names across all fixtures, so a typo silently creates a new player.
 - **Omit `players` entirely** when no line-up is published. Don't use `[]` — an
@@ -51,8 +49,8 @@ already carries two:
 
 ```js
 { date:"2026-09-14", cupType:"Divisional",
-  lineups:{ "HRC C":["Jackie T","John B","Dave C"],
-            "HRC D":["Tony M","Jake S","Manuel"] } },
+  lineups:{ "HRC C":["Jackie Turner","John Barnes","Dave Cocks"],
+            "HRC D":["Tony Martin","Jake Skull","Manuel"] } },
 ```
 
 With one team in view each list is labelled "Playing"; across all teams it's
@@ -82,10 +80,10 @@ Taken from the line-ups presently in the data.
 
 | Team | Players | Source |
 |---|---|---|
-| HRC A | Andrew N, Chris W, Derek B, Kai D, Neil S, Paul J, Sandy N | team availability grid, first half only |
-| HRC B | Anuj P, Gideon A, Mustafa K, Rai L, Sunil T | club sheet, first half only |
-| HRC C | Dave C, Dudu S, Faith F, Jackie T, John B, Mike R | captain's Division One sheet, first half only |
-| HRC D | Cathy P, Jake S, Jo S, **Manuel**, Steve H, Tony M | HL 26-27 Version 1, first half only |
+| HRC A | Andrew Nash, Chris Wade, Derek Balding, Kai Drake, Neil Skull, Paul Jones, Sandy Nash | team availability grid, first half only |
+| HRC B | Anuj Patel, Gideon Alao, Mustafa Kipergil, Rai Liiv, Sunil Trakru | club sheet, first half only |
+| HRC C | Dave Cocks, Dudu Souleiman, Faith Frankel, Jackie Turner, John Barnes, Mike Roberts | captain's Division One sheet, first half only |
+| HRC D | Cathy Parsons, Jake Skull, Jo Swain, **Manuel**, Steve Hooker, Tony Martin | HL 26-27 Version 1, first half only |
 
 ### Surnames
 
@@ -98,11 +96,13 @@ every registered player by team. Two things to know when reading it:
   and Mustafa Kipergil are registered HRC C but appear in HRC B's line-ups; Faith
   Frankel is registered HRC D but plays HRC C; Jake Skull is registered HRC C but
   plays HRC D. Take the surname from the page, the team from the line-up sheet.
-- **It is not exhaustive.** Three HRC D and HRC A players are absent from it:
-  `Kai D`'s surname came from HRC A's own grid, and `Tony M` (Martin) from the
-  club direct. **Manuel** is on no source at all and is still stored as a bare
-  first name — add his initial when someone can supply the surname. Nothing
-  collides with him, so he filters correctly meanwhile.
+- **It is not exhaustive.** Kai Drake's surname came from HRC A's own grid, and
+  Tony Martin's from the club direct. **Manuel** is on no source at all and is
+  still stored as a bare first name — add his surname when someone can supply
+  it. Nothing collides with him, so he filters correctly meanwhile.
+- **One name disagrees between sources.** The page registers him as *Andy* Nash;
+  HRC A's own grid calls him *Andrew* Nash. The grid wins, as the team's own
+  document, but it's worth confirming which he prefers.
 
 The page also shows each team's contact and confirms all four HRC teams play
 home matches on Wednesday.
@@ -122,8 +122,8 @@ row. Two things follow:
 
 **John Chamberlain is on the grid with 0 matches.** He therefore appears nowhere
 in the data and won't be offered in the filter — correct, not a missed column.
-He is the reason HRC C's John Barnes is stored as `John B`: the two would
-otherwise collide the moment Chamberlain is picked.
+He is one reason names are stored in full: bare first names would have collided
+with HRC C's John Barnes the moment Chamberlain was picked.
 
 ### HRC C initials
 
@@ -132,12 +132,12 @@ the next one:
 
 | Initials | Full name | Stored as |
 |---|---|---|
-| DS | Dudu Souleiman *(captain)* | `Dudu S` |
-| JB | John Barnes | `John B` |
-| JT | Jackie Turner | `Jackie T` |
-| DC | Dave Cocks | `Dave C` |
-| MR | Mike Roberts | `Mike R` |
-| FF | Faith Frankel | `Faith F` |
+| DS | Dudu Souleiman *(captain)* | `Dudu Souleiman` |
+| JB | John Barnes | `John Barnes` |
+| JT | Jackie Turner | `Jackie Turner` |
+| DC | Dave Cocks | `Dave Cocks` |
+| MR | Mike Roberts | `Mike Roberts` |
+| FF | Faith Frankel | `Faith Frankel` |
 
 `DS`/`DC` and `JB`/`JT` differ only in the second letter, so read them
 carefully. Faith's surname is illegible on the handwritten sheet — the club page
