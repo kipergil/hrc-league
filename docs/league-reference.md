@@ -31,10 +31,12 @@ changes — the date and opponent are already correct.
 - **Spell each player identically everywhere.** The roster is built by collecting
   distinct names across all fixtures, so a typo silently creates a new player,
   and `"Tony"` and `"TONY"` would show as two.
-- **Watch for a first-name clash across teams.** Nothing collides today, but the
-  roster is global: two different Daves on two teams would merge into one filter
-  entry. If it happens, disambiguate both (`Dave C`, `Dave M`) rather than only
-  the newcomer.
+- **Watch for a first-name clash across teams.** The roster is global, so two
+  different Daves on two teams would merge into a single filter entry. Nothing
+  collides in the data today, but it is already one allocation away: HRC C has
+  John Barnes, and HRC A's grid lists a John Chambers who simply has no matches
+  yet. When it happens, disambiguate **both** (`John B`, `John C`) rather than
+  only the newcomer.
 - **Omit `players` entirely** when no line-up is published. Don't use `[]` — an
   empty array reads as "a line-up was published naming nobody", and the fixture
   would then be hidden from every player filter.
@@ -80,10 +82,29 @@ Taken from the line-ups presently in the data.
 
 | Team | Players | Source |
 |---|---|---|
-| HRC A | *none yet* | — |
+| HRC A | Andrew, Chris, Derek, Kai, Neil, Paul, Sandy | team availability grid, first half only |
 | HRC B | Anuj, Gideon, Mustafa, Rai, Sunil | club sheet, first half only |
 | HRC C | Dave, Dudu, Faith, Jackie, John, Mike | captain's Division One sheet, first half only |
 | HRC D | Cathy, Jake, Jo, Manuel, Steve, Tony | HL 26-27 Version 1, first half only |
+
+### HRC A: a grid, not a list
+
+HRC A's allocations arrive as a spreadsheet grid — fixtures down the side,
+players across the top, a `1` where someone plays — rather than three names per
+row. Two things follow:
+
+- **It carries its own checksum.** A "Matches allocated" footer totals each
+  player's column. Reconcile every column against it *and* check each row sums
+  to 3; a reading that satisfies both is almost certainly right, and one column
+  misread breaks at least one of them.
+- **Red blocks mean unavailable**, not selected. They span the dates a player is
+  away, and no tick ever appears inside one — useful as a third check.
+
+**John Chambers is on the grid with 0 matches.** He therefore appears nowhere in
+the data and won't be offered in the filter. That is correct, not a missed
+column — but see the first-name clash warning in §1: HRC C already has a
+**John** (Barnes). The moment John Chambers is allocated a match, both need
+disambiguating.
 
 ### HRC C initials
 
@@ -172,7 +193,7 @@ Which matches the club sheet exactly.
 
 ### Confidence
 
-This formula reproduces **all 23** fixtures the club sheets and the league grids
+This formula reproduces **all 30** fixtures the club sheets and the league grids
 both cover, to the day:
 
 | Sheet | Fixtures | Notably |
@@ -180,9 +201,10 @@ both cover, to the day:
 | HRC B, first half | 7 | Friday away at Ellenborough A |
 | HRC D, first half | 8 | Thursday opener at St. Andrews B, Tuesday at Cheshunt D |
 | HRC C, first half | 8 | Monday at Grundy Park B, Thursday at Ellenborough B |
+| HRC A, first half | 7 | Tuesday at Cheshunt A |
 
-Three sheets, written by different people, none of whom worked from this
-formula — and every date agrees. The non-Wednesday ones carry the most weight:
+Four sheets, in four different formats, written by different people, none of
+whom worked from this formula — and every date agrees. The non-Wednesday ones carry the most weight:
 each is an away fixture landing on that opponent's own home night, which is the
 formula's least obvious consequence.
 
@@ -403,8 +425,7 @@ matches the league source.
 
 Line-ups still to come:
 
-- **HRC A** — none at all, either half.
-- **HRC B, C, D** — second half only. HRC C's sheet notes that 2027 fixtures are
-  "to be decided nearer the time", so expect those sheets late.
+- **Second halves for all four teams.** HRC C's sheet notes that 2027 fixtures
+  are "to be decided nearer the time", so expect those sheets late.
 - **Cup rounds** — only two are assigned: 14 Sep (HRC C and HRC D) and 12 Oct
   (HRC D). The other seven are unassigned.
