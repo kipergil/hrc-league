@@ -620,14 +620,16 @@
 // CalendarJ*.js derives them as season start (Mon 14 Sep 2026) + (week - 1) weeks +
 // the hosting club's home night, rather than the week-commencing date the grid shows.
 const matches = [
-  // HRC A
-  { team:"HRC A", date:"2026-09-23", ha:"Home", opponent:"Ellenborough A" },
-  { team:"HRC A", date:"2026-10-07", ha:"Home", opponent:"HRC B" },
-  { team:"HRC A", date:"2026-10-21", ha:"Away", opponent:"Kidston" },
-  { team:"HRC A", date:"2026-10-28", ha:"Home", opponent:"Water Lane B" },
-  { team:"HRC A", date:"2026-11-04", ha:"Away", opponent:"Water Lane A" },
-  { team:"HRC A", date:"2026-11-18", ha:"Home", opponent:"Grundy Park A" },
-  { team:"HRC A", date:"2026-12-08", ha:"Away", opponent:"Cheshunt A" },
+  // HRC A — player allocations from the team's first-half availability grid.
+  // The grid marks no players against the cup weeks, so those stay unassigned.
+  { team:"HRC A", date:"2026-09-23", ha:"Home", opponent:"Ellenborough A", players:["Derek","Kai","Chris"] },
+  { team:"HRC A", date:"2026-10-07", ha:"Home", opponent:"HRC B", players:["Sandy","Neil","Paul"] },
+  { team:"HRC A", date:"2026-10-21", ha:"Away", opponent:"Kidston", players:["Neil","Kai","Paul"] },
+  { team:"HRC A", date:"2026-10-28", ha:"Home", opponent:"Water Lane B", players:["Andrew","Sandy","Chris"] },
+  { team:"HRC A", date:"2026-11-04", ha:"Away", opponent:"Water Lane A", players:["Sandy","Derek","Kai"] },
+  { team:"HRC A", date:"2026-11-18", ha:"Home", opponent:"Grundy Park A", players:["Derek","Paul","Chris"] },
+  { team:"HRC A", date:"2026-12-08", ha:"Away", opponent:"Cheshunt A", players:["Derek","Neil","Kai"] },
+  // Second half — no line-ups published yet.
   { team:"HRC A", date:"2027-01-15", ha:"Away", opponent:"Ellenborough A" },
   { team:"HRC A", date:"2027-01-27", ha:"Away", opponent:"HRC B" },
   { team:"HRC A", date:"2027-02-10", ha:"Home", opponent:"Kidston" },
