@@ -81,7 +81,7 @@ Taken from the line-ups presently in the data.
 | Team | Players | Source |
 |---|---|---|
 | HRC A | Andrew Nash, Chris Wade, Derek Balding, Kai Drake, Neil Skull, Paul Jones, Sandy Nash | team availability grid, first half only |
-| HRC B | Anuj Patel, Gideon Alao, Mustafa Kipergil, Rai Liiv, Sunil Trakru | club sheet, first half only |
+| HRC B | **Abdul**, Anuj Patel, Gideon Alao, Mustafa Kipergil, Rai Liiv, Sunil Trakru | allocation sheet rev. 10 Sep 2026, first half only |
 | HRC C | Dave Cocks, Dudu Souleiman, Faith Frankel, Jackie Turner, John Barnes, Mike Roberts | captain's Division One sheet, first half only |
 | HRC D | Cathy Parsons, Jake Skull, Jo Swain, **Manuel**, Steve Hooker, Tony Martin | HL 26-27 Version 1, first half only |
 
@@ -96,16 +96,38 @@ every registered player by team. Two things to know when reading it:
   and Mustafa Kipergil are registered HRC C but appear in HRC B's line-ups; Faith
   Frankel is registered HRC D but plays HRC C; Jake Skull is registered HRC C but
   plays HRC D. Take the surname from the page, the team from the line-up sheet.
-- **It is not exhaustive.** Kai Drake's surname came from HRC A's own grid, and
-  Tony Martin's from the club direct. **Manuel** is on no source at all and is
-  still stored as a bare first name — add his surname when someone can supply
-  it. Nothing collides with him, so he filters correctly meanwhile.
+- **It is not exhaustive, and it lags.** Kai Drake's surname came from HRC A's
+  own grid and Tony Martin's from the club direct, before either appeared on the
+  page. **Abdul** (HRC B, added 10 Sep 2026) is not on it yet and is stored as a
+  bare first name; add his surname once he is registered. Nothing collides with
+  him, so he filters correctly meanwhile.
+- **Re-read the page when a name is missing.** Its "last updated" stamp is
+  unreliable — it still read 23 Aug 2026 on 10 Sep, by which time Kai Drake,
+  Jake Skull, Tony Martin and **Manuel Martin** had all appeared, and several
+  players had moved to the team they actually play for. Manuel's surname is
+  available there now and is not yet applied here.
 - **One name disagrees between sources.** The page registers him as *Andy* Nash;
   HRC A's own grid calls him *Andrew* Nash. The grid wins, as the team's own
   document, but it's worth confirming which he prefers.
 
 The page also shows each team's contact and confirms all four HRC teams play
 home matches on Wednesday.
+
+### HRC B: four names on some fixtures
+
+HRC B's sheet marks players with `P`, and an `Away` where someone is
+unavailable. On four of its seven first-half fixtures it marks **four** players,
+not three — every other team's sheet names exactly three, and HRC D's has
+literal *Player 1 / 2 / 3* columns.
+
+Those four are stored as the sheet has them, since dropping one would mean
+choosing which. If the fourth is a reserve rather than a selection, trim it to
+three; the calendar itself is happy either way, as it only lists what it is
+given.
+
+The `Away` markers are not carried across — the data has no concept of
+unavailability, and in both cases the player marked away was not selected for
+that fixture anyway, so nothing is lost.
 
 ### HRC A: a grid, not a list
 
