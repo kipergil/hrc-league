@@ -113,21 +113,23 @@ every registered player by team. Two things to know when reading it:
 The page also shows each team's contact and confirms all four HRC teams play
 home matches on Wednesday.
 
-### HRC B: four names on some fixtures
+### HRC B: check which revision you have
 
 HRC B's sheet marks players with `P`, and an `Away` where someone is
-unavailable. On four of its seven first-half fixtures it marks **four** players,
-not three — every other team's sheet names exactly three, and HRC D's has
-literal *Player 1 / 2 / 3* columns.
+unavailable. It circulated in two revisions on the same date, and they disagree:
 
-Those four are stored as the sheet has them, since dropping one would mean
-choosing which. If the fourth is a reserve rather than a selection, trim it to
-three; the calendar itself is happy either way, as it only lists what it is
-given.
+- The **workbook** named four players on four of the seven fixtures.
+- The **later screenshot** names three on all seven, dropping one name from each
+  of those four.
+
+Three per fixture matches every other team — HRC D's sheet has literal
+*Player 1 / 2 / 3* columns — so the three-name revision is the one stored. If a
+future sheet names four again, check it against the totals before assuming a
+squad change: 7 fixtures × 3 = 21 slots.
 
 The `Away` markers are not carried across — the data has no concept of
-unavailability, and in both cases the player marked away was not selected for
-that fixture anyway, so nothing is lost.
+unavailability, and in both revisions the player marked away was not selected
+for that fixture anyway, so nothing is lost.
 
 ### HRC A: a grid, not a list
 
