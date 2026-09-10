@@ -81,7 +81,7 @@ Taken from the line-ups presently in the data.
 | Team | Players | Source |
 |---|---|---|
 | HRC A | Andrew Nash, Chris Wade, Derek Balding, Kai Drake, Neil Skull, Paul Jones, Sandy Nash | team availability grid, first half only |
-| HRC B | Abdul Saymore, Anuj Patel, Gideon Alao, Mustafa Kipergil, Rai Liiv, Sunil Trakru | allocation sheet rev. 10 Sep 2026, first half only |
+| HRC B | Abdul Olagboyega, Anuj Patel, Gideon Alao, Mustafa Kipergil, Rai Liiv, Sunil Trakru | allocation sheet rev. 10 Sep 2026, first half only |
 | HRC C | Dave Cocks, Dudu Souleiman, Faith Frankel, Jackie Turner, John Barnes, Mike Roberts | captain's Division One sheet, first half only |
 | HRC D | Cathy Parsons, Jake Skull, Jo Swain, **Manuel**, Steve Hooker, Tony Martin | HL 26-27 Version 1, first half only |
 
@@ -98,7 +98,7 @@ every registered player by team. Two things to know when reading it:
   plays HRC D. Take the surname from the page, the team from the line-up sheet.
 - **It is not exhaustive, and it lags.** Kai Drake's surname came from HRC A's
   own grid and Tony Martin's from the club direct, before either appeared on the
-  page, and Abdul Saymore's (HRC B, added 10 Sep 2026) likewise — he is not
+  page, and Abdul Olagboyega's (HRC B, added 10 Sep 2026) likewise — he is not
   registered on it yet. **Manuel** is the only player still stored as a bare
   first name; nothing collides with him, so he filters correctly meanwhile.
 - **Re-read the page when a name is missing.** Its "last updated" stamp is
