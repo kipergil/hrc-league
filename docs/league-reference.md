@@ -53,12 +53,31 @@ already carries two:
             "HRC D":["Tony Martin","Jake Skull","Manuel"] } },
 ```
 
-With one team in view each list is labelled "Playing"; across all teams it's
+With one team in view the chips stand alone; across all teams each list is
 labelled with the team it belongs to, so several can sit on the one row without
 ambiguity.
 
 Omit `lineups` when nobody is assigned — the round then shows "Applies to all
 HRC teams" and stays visible to everyone.
+
+#### Confirmed cup nights
+
+`date` is the Monday the cup week commences. When the league confirms the actual
+night for a team, add it to an optional `dates` map keyed the same way:
+
+```js
+{ date:"2026-10-12", cupType:"Divisional",
+  lineups:{ "HRC A":["Neil Skull","Sandy Nash","Kai Drake"],
+            "HRC D":["Manuel","Jake Skull","Steve Hooker"] },
+  dates:{ "HRC A":"2026-10-14" } },
+```
+
+The row moves to the confirmed night only when *every* line-up in view is
+confirmed and they all agree. So HRC A's filter puts this round on Wed 14 Oct;
+the all-teams view keeps it on Mon 12 Oct and labels HRC A's list "HRC A · Wed,
+14 Oct". The calendar export splits the round into one entry per distinct night,
+and drops the "week commencing" caveat from the confirmed ones. Confirmed cup
+entries stay all-day: the round gives no venue, so no start time can be claimed.
 
 ### What the filters then do
 
@@ -80,7 +99,7 @@ Taken from the line-ups presently in the data.
 
 | Team | Players | Source |
 |---|---|---|
-| HRC A | Andrew Nash, Chris Wade, Derek Balding, Kai Drake, Neil Skull, Paul Jones, Sandy Nash | team availability grid, first half only |
+| HRC A | Chris Wade, Derek Balding, Kai Drake, Neil Skull, Paul Jones, Sandy Nash | team availability grid, first half only, plus the captain's later changes |
 | HRC B | Abdul Olagboyega, Anuj Patel, Gideon Alao, Mustafa Kipergil, Rai Liiv, Sunil Trakru | allocation sheet rev. 10 Sep 2026, first half only |
 | HRC C | Dave Cocks, Dudu Souleiman, Faith Frankel, Jackie Turner, John Barnes, Mike Roberts | captain's Division One sheet, first half only |
 | HRC D | Cathy Parsons, Jake Skull, Jo Swain, **Manuel**, Steve Hooker, Tony Martin | HL 26-27 Version 1, first half only |
@@ -106,9 +125,11 @@ every registered player by team. Two things to know when reading it:
   Jake Skull, Tony Martin and **Manuel Martin** had all appeared, and several
   players had moved to the team they actually play for. Manuel's surname is
   available there now and is not yet applied here.
-- **One name disagrees between sources.** The page registers him as *Andy* Nash;
-  HRC A's own grid calls him *Andrew* Nash. The grid wins, as the team's own
-  document, but it's worth confirming which he prefers.
+- **One name disagreed between sources, and has since dropped out.** The page
+  registers him as *Andy* Nash; HRC A's grid called him *Andrew* Nash. His only
+  fixture was 28 Oct, and the captain has replaced him with Paul Jones, so no
+  HRC A line-up names him and he no longer appears in the filter. Restore him
+  under whichever spelling he prefers if he is picked again.
 
 The page also shows each team's contact and confirms all four HRC teams play
 home matches on Wednesday.
@@ -395,7 +416,9 @@ Week 1 begins Monday 14 September 2026; every week runs Monday to Sunday.
 | 32 | 19 Apr 2027 | Cup Finals |
 
 Cup weeks are league-wide and stored once in `cupRounds`, dated on the Monday —
-the grids give cup rounds no specific night.
+the grids give cup rounds no specific night. Where a night is later confirmed
+for a team, record it in that round's `dates` map; the 12 Oct Divisional round
+carries Wed 14 Oct for HRC A.
 
 ### HRC bye weeks
 
@@ -471,4 +494,5 @@ Line-ups still to come:
 - **Second halves for all four teams.** HRC C's sheet notes that 2027 fixtures
   are "to be decided nearer the time", so expect those sheets late.
 - **Cup rounds** — only two are assigned: 14 Sep (HRC C and HRC D) and 12 Oct
-  (HRC D). The other seven are unassigned.
+  (HRC A, on the confirmed night of Wed 14 Oct, and HRC D). The other seven are
+  unassigned.
