@@ -662,12 +662,14 @@
 // CalendarJ*.js derives them as season start (Mon 14 Sep 2026) + (week - 1) weeks +
 // the hosting club's home night, rather than the week-commencing date the grid shows.
 const matches = [
-  // HRC A — player allocations from the team's first-half availability grid.
-  // The grid marks no players against the cup weeks, so those stay unassigned.
+  // HRC A — player allocations from the team's first-half availability grid,
+  // with the captain's later changes applied (see cupRounds for the 14 Oct
+  // Divisional Cup side).
   { team:"HRC A", date:"2026-09-23", ha:"Home", opponent:"Ellenborough A", players:["Derek Balding","Kai Drake","Chris Wade"] },
   { team:"HRC A", date:"2026-10-07", ha:"Home", opponent:"HRC B", players:["Sandy Nash","Neil Skull","Paul Jones"] },
   { team:"HRC A", date:"2026-10-21", ha:"Away", opponent:"Kidston", players:["Neil Skull","Kai Drake","Paul Jones"] },
-  { team:"HRC A", date:"2026-10-28", ha:"Home", opponent:"Water Lane B", players:["Andrew Nash","Sandy Nash","Chris Wade"] },
+  // Paul Jones replaces Andrew Nash for this one, per the captain.
+  { team:"HRC A", date:"2026-10-28", ha:"Home", opponent:"Water Lane B", players:["Paul Jones","Sandy Nash","Chris Wade"] },
   { team:"HRC A", date:"2026-11-04", ha:"Away", opponent:"Water Lane A", players:["Sandy Nash","Derek Balding","Kai Drake"] },
   { team:"HRC A", date:"2026-11-18", ha:"Home", opponent:"Grundy Park A", players:["Derek Balding","Paul Jones","Chris Wade"] },
   { team:"HRC A", date:"2026-12-08", ha:"Away", opponent:"Cheshunt A", players:["Derek Balding","Neil Skull","Kai Drake"] },
@@ -739,10 +741,13 @@ const matches = [
 // Cup rounds — league-wide weeks (Divisional/Handicap/Finals) that apply to every
 // HRC team at once, so they're a single merged row rather than one per team. A
 // round can still name a line-up per team; rounds with none just say who they
-// apply to.
+// apply to. `date` is the Monday the cup week commences; `dates` carries the
+// night a team has actually been given, once the league has confirmed one.
 const cupRounds = [
   { date:"2026-09-14", cupType:"Divisional", lineups:{ "HRC C":["Jackie Turner","John Barnes","Dave Cocks"], "HRC D":["Tony Martin","Jake Skull","Manuel"] } },
-  { date:"2026-10-12", cupType:"Divisional", lineups:{ "HRC D":["Manuel","Jake Skull","Steve Hooker"] } },
+  { date:"2026-10-12", cupType:"Divisional",
+    lineups:{ "HRC A":["Neil Skull","Sandy Nash","Kai Drake"], "HRC D":["Manuel","Jake Skull","Steve Hooker"] },
+    dates:{ "HRC A":"2026-10-14" } },
   { date:"2026-11-09", cupType:"Divisional" },
   { date:"2026-12-14", cupType:"Finals" },
   { date:"2027-01-04", cupType:"Handicap" },
@@ -882,12 +887,26 @@ function scopeTeams(){
   return null;
 }
 
-// The line-ups a cup round publishes for the teams currently in view.
+// The line-ups a cup round publishes for the teams currently in view. `date` is
+// the team's confirmed night where there is one, else the week-commencing date.
 function cupLineups(round){
   const scope = scopeTeams();
   return Object.entries(round.lineups||{})
     .filter(([team]) => !scope || scope.includes(team))
-    .map(([team, players]) => ({ team, players }));
+    .map(([team, players]) => ({
+      team, players,
+      date: (round.dates||{})[team] || round.date,
+      confirmed: !!(round.dates||{})[team]
+    }));
+}
+
+// A cup row can be pinned to a real night only when every line-up in view
+// agrees on one; otherwise it stays on the week-commencing Monday.
+function cupRowDate(round){
+  const lineups = cupLineups(round);
+  if(!lineups.length || !lineups.every(l => l.confirmed)) return round.date;
+  const dates = new Set(lineups.map(l => l.date));
+  return dates.size === 1 ? [...dates][0] : round.date;
 }
 
 // Same rule as league matches: a round drops out only when it names a line-up
@@ -919,7 +938,7 @@ function isPlayingIn(m){
 }
 
 function upcomingFixture(){
-  return [...visibleLeagueMatches(), ...visibleCupRounds()]
+  return [...visibleLeagueMatches(), ...visibleCupRounds().map(r => ({ ...r, date:cupRowDate(r) }))]
     .filter(m => m.date >= today)
     .sort((a,b) => a.date.localeCompare(b.date))[0] || null;
 }
@@ -1148,14 +1167,29 @@ function calendarEvents(){
     });
   });
 
+  // A round lands on whatever nights its line-ups have been confirmed for — one
+  // entry per distinct night — and on the week-commencing Monday for the rest.
   visibleCupRounds().forEach(r => {
     const lineups = cupLineups(r);
-    add(r.date, `${r.cupType} Cup`, [
-      lineups.length
-        ? lineups.map(l => `${l.team} — ${l.players.join(', ')}`).join('\n')
-        : 'Applies to all HRC teams',
-      'Week commencing — the exact match date is set by the league.'
-    ].join('\n'));
+    if(!lineups.length){
+      add(r.date, `${r.cupType} Cup`, [
+        'Applies to all HRC teams',
+        'Week commencing — the exact match date is set by the league.'
+      ].join('\n'));
+      return;
+    }
+    const byDate = new Map();
+    lineups.forEach(l => {
+      if(!byDate.has(l.date)) byDate.set(l.date, []);
+      byDate.get(l.date).push(l);
+    });
+    byDate.forEach((group, date) => {
+      const detail = group.map(l => `${l.team} — ${l.players.join(', ')}`);
+      if(!group[0].confirmed){
+        detail.push('Week commencing — the exact match date is set by the league.');
+      }
+      add(date, `${r.cupType} Cup`, detail.join('\n'));
+    });
   });
 
   return [...byKey.values()].sort((a, b) => a.date.localeCompare(b.date));
@@ -1292,8 +1326,8 @@ function renderMonths(){
       .filter(m => inMonth(m.date))
       .map(m => ({ kind:'league', ...m }));
     const cupRows = visibleCupRounds()
-      .filter(m => inMonth(m.date))
-      .map(m => ({ kind:'cup', ...m }));
+      .map(m => ({ kind:'cup', ...m, date:cupRowDate(m) }))
+      .filter(m => inMonth(m.date));
     const monthMatches = [...leagueRows, ...cupRows]
       .sort((a,b) => a.date.localeCompare(b.date) || (a.team||'').localeCompare(b.team||''));
     summary.innerHTML = `<span class="month-chevron">&rsaquo;</span> ${label} <small>${monthMatches.length} fixture${monthMatches.length!==1?'s':''}</small>`;
@@ -1355,7 +1389,13 @@ function renderMonths(){
               const chips = l.players
                 .map(p => `<span class="player-chip${p === selectedPlayer ? ' me' : ''}">${p}</span>`)
                 .join('');
-              const label = single ? '' : `<span class="players-label">${l.team}</span>`;
+              // The row sits on the confirmed night only when every line-up in
+              // view shares it; otherwise each team's night is said here.
+              const night = l.date !== m.date
+                ? new Date(l.date+"T00:00:00").toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})
+                : '';
+              const labelText = single ? night : (night ? `${l.team} · ${night}` : l.team);
+              const label = labelText ? `<span class="players-label">${labelText}</span>` : '';
               return `<div class="agenda-playerlist">${label}${chips}</div>`;
             }).join('');
           }
