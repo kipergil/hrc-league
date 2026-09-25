@@ -67,7 +67,7 @@ night for a team, add it to an optional `dates` map keyed the same way:
 
 ```js
 { date:"2026-10-12", cupType:"Divisional",
-  lineups:{ "HRC A":["Neil Skull","Sandy Nash","Kai Drake"],
+  lineups:{ "HRC A":["Neil Skull","Sandy Nash","Paul Jones"],
             "HRC D":["Manuel","Jake Skull","Steve Hooker"] },
   dates:{ "HRC A":"2026-10-14" } },
 ```
