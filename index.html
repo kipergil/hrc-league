@@ -937,10 +937,15 @@ function isPlayingIn(m){
   return !!m.players && m.players.includes(selectedPlayer);
 }
 
-function upcomingFixture(){
+// The soonest date still to come in the current view. A night can carry more
+// than one fixture — two HRC teams at home, or a team's league match alongside
+// a cup round — and all of them are equally "next up", so this returns the date
+// rather than a single match.
+function upcomingDate(){
   return [...visibleLeagueMatches(), ...visibleCupRounds().map(r => ({ ...r, date:cupRowDate(r) }))]
-    .filter(m => m.date >= today)
-    .sort((a,b) => a.date.localeCompare(b.date))[0] || null;
+    .map(m => m.date)
+    .filter(d => d >= today)
+    .sort()[0] || null;
 }
 
 function buildPills(){
@@ -1306,7 +1311,7 @@ function render(){
 function renderMonths(){
   const container = document.getElementById('months');
   container.innerHTML = '';
-  const upcomingMatch = upcomingFixture();
+  const nextDate = upcomingDate();
 
   months.forEach(({year,month,label}) => {
     const key = `${year}-${month}`;
@@ -1347,8 +1352,7 @@ function renderMonths(){
         const isMine = m.kind === 'league' &&
           (selectedPlayer ? isPlayingIn(m) : (selected && m.team === selected));
         const isOtherSelected = selected && m.kind === 'league' && m.team !== selected;
-        const isUpcoming = upcomingMatch && m.date === upcomingMatch.date &&
-          (m.kind === 'cup' ? !upcomingMatch.team : m.team === upcomingMatch.team);
+        const isUpcoming = m.date === nextDate;
 
         let matchupHtml, badgeHtml, noteHtml, playersHtml = '', mapHtml = '', startLabel = '';
         if(m.kind === 'league'){
