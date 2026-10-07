@@ -31,8 +31,8 @@ changes — the date and opponent are already correct.
   page (§2).
 - **This is what keeps the roster unambiguous.** It is a single global list, so
   bare first names would merge two people into one filter entry. The club really
-  does have two Johns — Barnes (HRC C) and Chamberlain (HRC A) — and two Nashes,
-  and two Skulls.
+  does have two Johns — Barnes (HRC C) and Chamberlain (HRC A) — two Nashes, two
+  Skulls, and two Martins: Tony and Manuel, both HRC D.
 - **Spell each player identically everywhere.** The roster is built by collecting
   distinct names across all fixtures, so a typo silently creates a new player.
 - **Omit `players` entirely** when no line-up is published. Don't use `[]` — an
@@ -50,7 +50,7 @@ already carries two:
 ```js
 { date:"2026-09-14", cupType:"Divisional",
   lineups:{ "HRC C":["Jackie Turner","John Barnes","Dave Cocks"],
-            "HRC D":["Tony Martin","Jake Skull","Manuel"] } },
+            "HRC D":["Tony Martin","Jake Skull","Manuel Martin"] } },
 ```
 
 With one team in view the chips stand alone; across all teams each list is
@@ -68,7 +68,7 @@ night for a team, add it to an optional `dates` map keyed the same way:
 ```js
 { date:"2026-10-12", cupType:"Divisional",
   lineups:{ "HRC A":["Neil Skull","Sandy Nash","Paul Jones"],
-            "HRC D":["Manuel","Jake Skull","Steve Hooker"] },
+            "HRC D":["Manuel Martin","Jake Skull","Steve Hooker"] },
   dates:{ "HRC A":"2026-10-14" } },
 ```
 
@@ -102,7 +102,7 @@ Taken from the line-ups presently in the data.
 | HRC A | Chris Wade, Derek Balding, Kai Drake, Neil Skull, Paul Jones, Sandy Nash | team availability grid, first half only, plus the captain's later changes |
 | HRC B | Abdul Olagboyega, Anuj Patel, Gideon Alao, Mustafa Kipergil, Rai Liiv, Sunil Trakru | allocation sheet rev. 10 Sep 2026, first half only |
 | HRC C | Dave Cocks, Dudu Souleiman, Faith Frankel, Jackie Turner, John Barnes, Mike Roberts | captain's Division One sheet, first half only |
-| HRC D | Cathy Parsons, Jake Skull, Jo Swain, **Manuel**, Steve Hooker, Tony Martin | HL 26-27 Version 1, first half only |
+| HRC D | Cathy Parsons, Jake Skull, Jo Swain, Manuel Martin, Steve Hooker, Tony Martin, Yunus Totan | HL 26-27 Version 1, first half only, plus the captain's later changes |
 
 ### Surnames
 
@@ -118,13 +118,13 @@ every registered player by team. Two things to know when reading it:
 - **It is not exhaustive, and it lags.** Kai Drake's surname came from HRC A's
   own grid and Tony Martin's from the club direct, before either appeared on the
   page, and Abdul Olagboyega's (HRC B, added 10 Sep 2026) likewise — he is not
-  registered on it yet. **Manuel** is the only player still stored as a bare
-  first name; nothing collides with him, so he filters correctly meanwhile.
+  registered on it yet. Every other player is now stored with a full name.
 - **Re-read the page when a name is missing.** Its "last updated" stamp is
   unreliable — it still read 23 Aug 2026 on 10 Sep, by which time Kai Drake,
-  Jake Skull, Tony Martin and **Manuel Martin** had all appeared, and several
-  players had moved to the team they actually play for. Manuel's surname is
-  available there now and is not yet applied here.
+  Jake Skull, Tony Martin and Manuel Martin had all appeared, and several
+  players had moved to the team they actually play for. It also yielded **Yunus
+  Totan**, who first appears in an HRC D line-up on 7 Oct, and **Manuel
+  Martin**, who had been stored as a bare first name until then.
 - **One name disagreed between sources, and has since dropped out.** The page
   registers him as *Andy* Nash; HRC A's grid called him *Andrew* Nash. His only
   fixture was 28 Oct, and the captain has replaced him with Paul Jones, so no
