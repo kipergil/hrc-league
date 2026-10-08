@@ -68,14 +68,16 @@ night for a team, add it to an optional `dates` map keyed the same way:
 ```js
 { date:"2026-10-12", cupType:"Divisional",
   lineups:{ "HRC A":["Neil Skull","Sandy Nash","Paul Jones"],
+            "HRC B":["Gideon Alao","Sunil Trakru","Mustafa Kipergil"],
             "HRC D":["Manuel Martin","Jake Skull","Steve Hooker"] },
-  dates:{ "HRC A":"2026-10-14" } },
+  dates:{ "HRC A":"2026-10-14", "HRC B":"2026-10-14" } },
 ```
 
 The row moves to the confirmed night only when *every* line-up in view is
-confirmed and they all agree. So HRC A's filter puts this round on Wed 14 Oct;
-the all-teams view keeps it on Mon 12 Oct and labels HRC A's list "HRC A · Wed,
-14 Oct". The calendar export splits the round into one entry per distinct night,
+confirmed and they all agree. So HRC A's and HRC B's filters put this round on
+Wed 14 Oct; the all-teams view keeps it on Mon 12 Oct, because HRC D has no
+confirmed night, and labels each list — "HRC A · Wed, 14 Oct". The calendar
+export splits the round into one entry per distinct night,
 and drops the "week commencing" caveat from the confirmed ones. Confirmed cup
 entries stay all-day: the round gives no venue, so no start time can be claimed.
 
@@ -418,7 +420,7 @@ Week 1 begins Monday 14 September 2026; every week runs Monday to Sunday.
 Cup weeks are league-wide and stored once in `cupRounds`, dated on the Monday —
 the grids give cup rounds no specific night. Where a night is later confirmed
 for a team, record it in that round's `dates` map; the 12 Oct Divisional round
-carries Wed 14 Oct for HRC A.
+carries Wed 14 Oct for both HRC A and HRC B.
 
 ### HRC bye weeks
 
@@ -494,5 +496,5 @@ Line-ups still to come:
 - **Second halves for all four teams.** HRC C's sheet notes that 2027 fixtures
   are "to be decided nearer the time", so expect those sheets late.
 - **Cup rounds** — only two are assigned: 14 Sep (HRC C and HRC D) and 12 Oct
-  (HRC A, on the confirmed night of Wed 14 Oct, and HRC D). The other seven are
-  unassigned.
+  (HRC A and HRC B, both on the confirmed night of Wed 14 Oct, plus HRC D). The
+  other seven are unassigned.
