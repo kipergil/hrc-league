@@ -277,6 +277,27 @@ formula's least obvious consequence.
 The sheets' one remaining row, HRC D's Water Lane C fixture, had no league
 counterpart at all and turned out to be an error — see §7.
 
+### Rearranged fixtures
+
+A rearranged fixture is the one case where a stored date is *meant* to disagree
+with the formula, so don't "correct" it back. Edit the existing row rather than
+adding one — the grid still shows the original date, and a second row would
+double the fixture — and move it into date order within its team's block so the
+list stays readable. Leave a comment saying where it came from:
+
+```js
+// Rearranged from Wed 21 Oct away, and now played at home. Same three named.
+{ team:"HRC A", date:"2026-11-25", ha:"Home", opponent:"Kidston", players:[…] },
+```
+
+Everything date- and venue-derived follows the edited row: the month it files
+under, the start time, the map pin, the calendar entry's location, and which
+club's home night it should have fallen on. So changing `ha` is what moves a
+fixture between venues — there is no separate venue field to keep in step.
+
+One known case so far: **HRC A v Kidston**, moved from Wed 21 Oct away to Wed
+25 Nov at home.
+
 ---
 
 ## 5. Clubs and home nights
