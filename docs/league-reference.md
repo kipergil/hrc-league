@@ -93,6 +93,41 @@ entries stay all-day: the round gives no venue, so no start time can be claimed.
 The third row is deliberate: an unallocated fixture isn't a fixture without that
 player, it's one nobody has been picked for yet.
 
+### The date window
+
+On top of the team and player filters, the list hides anything played more than
+`PAST_GRACE_DAYS` (7) ago, and a toggle above the list brings it back. The
+toggle is remembered in `localStorage` under `hrc-teams-show-past`, alongside
+the team and player keys.
+
+Two layers, kept separate because the counts need them apart:
+
+| | What it is | Used by |
+|---|---|---|
+| `leagueMatchesInScope()` / `cupRoundsInScope()` | team + player filters only | the summary's season counts, `pastCount()` |
+| `visibleLeagueMatches()` / `visibleCupRounds()` | the above, minus the date window | the list, the print sheet, the `.ics` |
+
+Consequences worth knowing when editing:
+
+- **The summary quotes season totals, not visible ones.** "Named in 3 league
+  matches" should not drop to 2 because one has been played. The hidden count is
+  appended as a separate clause instead.
+- **The roster never shrinks.** `allPlayers()` and `availablePlayers()` read the
+  raw arrays, so a player whose only fixtures are in the past stays in the
+  dropdown.
+- **A cup round is judged on its confirmed night**, via `cupRowDate()`, not the
+  week-commencing Monday.
+- **A month emptied by the window is dropped entirely**, rather than rendered as
+  "0 fixtures" — they are hidden, not absent, and the toggle accounts for them.
+  A month genuinely empty for the current filter still says "No fixtures this
+  month".
+- **Print and the calendar export follow the window**, as they follow every other
+  filter. The print header adds "earlier fixtures omitted" so a pinned sheet
+  doesn't read as though the season started late.
+- **Late in the season every month can fall behind the cutoff.** `renderMonths()`
+  then prints "Every fixture in this view has already been played" rather than
+  leaving a blank page.
+
 ---
 
 ## 2. Current rosters
