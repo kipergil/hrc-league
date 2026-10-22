@@ -229,6 +229,7 @@
     min-height:20px;
   }
   .summary strong{color:var(--ink);}
+  .summary-past{color:var(--muted);}
 
   .legend{
     display:flex;
@@ -244,6 +245,44 @@
   .dot.home{background:var(--court);}
   .dot.away{background:var(--ball);border:none;}
   .dot.cup{background:var(--gold);border:none;}
+
+  /* Sits directly above the list, because that is what it changes. */
+  .past-row{margin:14px 0 2px;}
+  .past-btn{
+    font-family:'Space Mono','SF Mono',SFMono-Regular,Consolas,'Courier New',monospace;
+    font-size:12.5px;
+    color:var(--court);
+    background:none;
+    border:1px dashed var(--line);
+    border-radius:999px;
+    padding:7px 14px;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+  }
+  .past-btn::before{
+    content:"+";
+    font-size:14px;
+    line-height:1;
+    color:var(--ball);
+  }
+  .past-btn[aria-pressed="true"]{
+    border-style:solid;
+    background:var(--white);
+  }
+  .past-btn[aria-pressed="true"]::before{content:"\2212";}  /* minus */
+  .past-btn:hover{border-color:var(--court);}
+  .past-btn:focus-visible{outline:2px solid var(--ball);outline-offset:2px;}
+
+  .list-empty{
+    margin-top:22px;
+    padding:22px 20px;
+    border:1px dashed var(--line);
+    border-radius:12px;
+    color:var(--muted);
+    font-size:14px;
+  }
 
   .month{margin-top:34px;}
   .month > summary{
@@ -523,7 +562,7 @@
       -webkit-print-color-adjust:exact;
       print-color-adjust:exact;
     }
-    .hero, .picker, .legend, footer, .print-btn, .month-chevron{display:none !important;}
+    .hero, .picker, .legend, .past-row, footer, .print-btn, .month-chevron{display:none !important;}
     .wrap{max-width:none;padding:0;}
 
     .print-header{
@@ -612,6 +651,7 @@
         <li>Your choice is remembered next time you visit.</li>
         <li>&#128197; and &#128424;&#65039; save or print exactly the list you&rsquo;re looking at.</li>
         <li>&#128205; beside a fixture opens that venue in Google Maps.</li>
+        <li>Played fixtures drop off after a week &mdash; &ldquo;Show earlier fixtures&rdquo; brings them back.</li>
       </ol>
     </div>
   </div>
@@ -642,6 +682,10 @@
     </div>
 
     <div class="print-header" id="printHeader"></div>
+
+    <div class="past-row" id="pastRow" hidden>
+      <button type="button" class="past-btn" id="pastBtn" aria-pressed="false"></button>
+    </div>
 
     <div id="months"></div>
   </div>
@@ -801,6 +845,11 @@ const months = [
 
 const TEAM_STORAGE_KEY = 'hrc-teams-selected-team';
 const PLAYER_STORAGE_KEY = 'hrc-teams-selected-player';
+const PAST_STORAGE_KEY = 'hrc-teams-show-past';
+
+// A fixture stays in the list for a week after it's played — long enough to
+// check a date you half-remember — then drops out unless the reader asks for it.
+const PAST_GRACE_DAYS = 7;
 
 function loadSavedTeam(){
   try {
@@ -857,8 +906,26 @@ function saveSelectedPlayer(player){
   }
 }
 
+function loadShowPast(){
+  try {
+    return localStorage.getItem(PAST_STORAGE_KEY) === '1';
+  } catch(e) {
+    return false;
+  }
+}
+
+function saveShowPast(show){
+  try {
+    if(show) localStorage.setItem(PAST_STORAGE_KEY, '1');
+    else localStorage.removeItem(PAST_STORAGE_KEY);
+  } catch(e) {
+    // storage unavailable (private browsing, etc.) — toggle still works, just isn't remembered
+  }
+}
+
 let selected = loadSavedTeam(); // null = everyone
 let selectedPlayer = loadSavedPlayer(); // null = every player
+let showPast = loadShowPast(); // false = hide anything older than the grace period
 const monthOpenState = {}; // "year-month" -> bool, persists across re-renders
 
 function isMonthDefaultOpen(year, month){
@@ -872,6 +939,18 @@ function todayISO(){
 }
 
 const today = todayISO();
+
+// Oldest date the list shows by default. Built by date arithmetic rather than
+// string maths so it crosses months and years correctly.
+const pastCutoff = (() => {
+  const d = new Date(today + 'T00:00:00');
+  d.setDate(d.getDate() - PAST_GRACE_DAYS);
+  return `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;
+})();
+
+function inDateWindow(date){
+  return showPast || date >= pastCutoff;
+}
 
 // Teams a player filter applies to: the selected team, or — when no team is
 // picked — every team that player actually turns out for.
@@ -912,9 +991,13 @@ function cupRowDate(round){
   return dates.size === 1 ? [...dates][0] : round.date;
 }
 
+// Fixtures fall out of view for two separate reasons, and the counts need them
+// apart: "in scope" is what the team and player filters leave, "visible" is
+// that minus anything older than the grace period.
+
 // Same rule as league matches: a round drops out only when it names a line-up
 // this player isn't in. A round with none still applies to their team.
-function visibleCupRounds(){
+function cupRoundsInScope(){
   if(!selectedPlayer) return cupRounds;
   return cupRounds.filter(r => {
     const lineups = cupLineups(r);
@@ -922,16 +1005,32 @@ function visibleCupRounds(){
   });
 }
 
-// League rows currently in view: team filter first, then player. Matches with no
+function visibleCupRounds(){
+  // the confirmed night, not the Monday, decides whether a round has passed
+  return cupRoundsInScope().filter(r => inDateWindow(cupRowDate(r)));
+}
+
+// League rows in scope: team filter first, then player. Matches with no
 // published line-up stay in view — nobody has been picked for them yet, so this
 // player may well end up in them. Only matches naming someone else drop out.
-function visibleLeagueMatches(){
+function leagueMatchesInScope(){
   const byTeam = matches.filter(m => !selected || m.team === selected);
   if(!selectedPlayer) return byTeam;
 
   const scope = selected ? [selected] : teamsPlayedFor(selectedPlayer);
   return byTeam.filter(m => scope.includes(m.team) &&
     (!m.players || m.players.includes(selectedPlayer)));
+}
+
+function visibleLeagueMatches(){
+  return leagueMatchesInScope().filter(m => inDateWindow(m.date));
+}
+
+// Fixtures in scope that sit before the cutoff — what the toggle covers,
+// whichever way it is currently set.
+function pastCount(){
+  return leagueMatchesInScope().filter(m => m.date < pastCutoff).length +
+         cupRoundsInScope().filter(r => cupRowDate(r) < pastCutoff).length;
 }
 
 function isPlayingIn(m){
@@ -1013,25 +1112,43 @@ function bindPlayerSelect(){
 
 function renderSummary(){
   const el = document.getElementById('summary');
+  // Season counts, not windowed ones — "named in 2 matches" would be wrong for
+  // a player who has already played a third. The toggle says what's hidden.
+  const hidden = showPast ? 0 : pastCount();
+  const note = hidden
+    ? ` <span class="summary-past">${hidden} earlier fixture${hidden!==1?'s':''} hidden.</span>`
+    : '';
   if(selectedPlayer){
-    const rows = visibleLeagueMatches();
+    const rows = leagueMatchesInScope();
     const named = rows.filter(isPlayingIn).length;
     const tbc = rows.length - named;
     const playerTeams = [...new Set(rows.map(m => m.team))];
     const scope = playerTeams.length === 1 ? ` for <strong>${playerTeams[0]}</strong>` : '';
     const tbcText = tbc ? `, plus <strong>${tbc}</strong> with no line-up announced yet` : '';
-    const cups = visibleCupRounds().length;
-    el.innerHTML = `<strong>${selectedPlayer}</strong> is named in <strong>${named}</strong> league match${named!==1?'es':''}${scope}${tbcText}, and <strong>${cups}</strong> cup round${cups!==1?'s':''}.`;
+    const cups = cupRoundsInScope().length;
+    el.innerHTML = `<strong>${selectedPlayer}</strong> is named in <strong>${named}</strong> league match${named!==1?'es':''}${scope}${tbcText}, and <strong>${cups}</strong> cup round${cups!==1?'s':''}.${note}`;
     return;
   }
   if(!selected){
     const total = matches.length + cupRounds.length;
-    el.innerHTML = `Showing all <strong>${total}</strong> fixtures for all four HRC teams (${matches.length} league matches, ${cupRounds.length} shared cup rounds).`;
+    el.innerHTML = `All four HRC teams: <strong>${total}</strong> fixtures this season (${matches.length} league matches, ${cupRounds.length} shared cup rounds).${note}`;
     return;
   }
   const leagueCount = matches.filter(m => m.team === selected).length;
   const cupCount = cupRounds.length;
-  el.innerHTML = `<strong>${selected}</strong> has <strong>${leagueCount + cupCount}</strong> fixtures this season: ${leagueCount} league, ${cupCount} cup.`;
+  el.innerHTML = `<strong>${selected}</strong> has <strong>${leagueCount + cupCount}</strong> fixtures this season: ${leagueCount} league, ${cupCount} cup.${note}`;
+}
+
+// The control is pointless when nothing has been played yet, or when the
+// filtered view has no past fixtures, so it only appears once it has work.
+function renderPastToggle(){
+  const row = document.getElementById('pastRow');
+  const btn = document.getElementById('pastBtn');
+  const n = pastCount();
+  row.hidden = n === 0;
+  if(n === 0) return;
+  btn.setAttribute('aria-pressed', showPast ? 'true' : 'false');
+  btn.textContent = `${showPast ? 'Hide' : 'Show'} ${n} earlier fixture${n!==1?'s':''}`;
 }
 
 // Who the sheet is for, in words — the printed page has no filter controls to read.
@@ -1045,10 +1162,12 @@ function filterLabel(){
 function renderPrintHeader(){
   const total = visibleLeagueMatches().length + visibleCupRounds().length;
   const printed = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  // Say so, or the sheet reads as if the season started whenever it now does.
+  const omitted = (!showPast && pastCount()) ? ' \u00b7 earlier fixtures omitted' : '';
   document.getElementById('printHeader').innerHTML = `
     <h2>HRC League Calendar</h2>
     <div class="print-scope">${filterLabel()}</div>
-    <div class="print-meta">${total} fixture${total!==1?'s':''} \u00b7 2026-27 season \u00b7 printed ${printed}</div>
+    <div class="print-meta">${total} fixture${total!==1?'s':''} \u00b7 2026-27 season \u00b7 printed ${printed}${omitted}</div>
   `;
 }
 
@@ -1307,6 +1426,7 @@ function render(){
 
   buildPlayerSelect();
   renderSummary();
+  renderPastToggle();
   renderPrintHeader();
   renderMonths();
 }
@@ -1320,12 +1440,6 @@ function renderMonths(){
     const key = `${year}-${month}`;
     if(!(key in monthOpenState)) monthOpenState[key] = isMonthDefaultOpen(year, month);
 
-    const monthEl = document.createElement('details');
-    monthEl.className = 'month';
-    monthEl.open = monthOpenState[key];
-    monthEl.addEventListener('toggle', () => { monthOpenState[key] = monthEl.open; });
-
-    const summary = document.createElement('summary');
     const inMonth = (dateStr) => {
       const d = new Date(dateStr+"T00:00:00");
       return d.getFullYear() === year && d.getMonth() === month;
@@ -1338,6 +1452,23 @@ function renderMonths(){
       .filter(m => inMonth(m.date));
     const monthMatches = [...leagueRows, ...cupRows]
       .sort((a,b) => a.date.localeCompare(b.date) || (a.team||'').localeCompare(b.team||''));
+
+    // A month emptied by the date window is dropped rather than shown as
+    // "0 fixtures", which would be a lie — they're hidden, not absent. The
+    // toggle above accounts for them. A month genuinely empty for this filter
+    // still says so.
+    if(monthMatches.length === 0 && !showPast){
+      const hiddenHere = leagueMatchesInScope().some(m => inMonth(m.date) && m.date < pastCutoff) ||
+        cupRoundsInScope().some(r => inMonth(cupRowDate(r)) && cupRowDate(r) < pastCutoff);
+      if(hiddenHere) return;
+    }
+
+    const monthEl = document.createElement('details');
+    monthEl.className = 'month';
+    monthEl.open = monthOpenState[key];
+    monthEl.addEventListener('toggle', () => { monthOpenState[key] = monthEl.open; });
+
+    const summary = document.createElement('summary');
     summary.innerHTML = `<span class="month-chevron">&rsaquo;</span> ${label} <small>${monthMatches.length} fixture${monthMatches.length!==1?'s':''}</small>`;
     monthEl.appendChild(summary);
 
@@ -1436,12 +1567,28 @@ function renderMonths(){
     monthEl.appendChild(agenda);
     container.appendChild(monthEl);
   });
+
+  // Late in the season every month can fall behind the cutoff, which would
+  // otherwise leave the page looking broken rather than finished.
+  if(!container.children.length){
+    const msg = document.createElement('div');
+    msg.className = 'list-empty';
+    msg.textContent = (!showPast && pastCount())
+      ? 'Every fixture in this view has already been played.'
+      : 'No fixtures match this filter.';
+    container.appendChild(msg);
+  }
 }
 
 buildPills();
 bindPlayerSelect();
 document.getElementById('printBtn').addEventListener('click', () => window.print());
 document.getElementById('calBtn').addEventListener('click', downloadICS);
+document.getElementById('pastBtn').addEventListener('click', () => {
+  showPast = !showPast;
+  saveShowPast(showPast);
+  render();
+});
 // also covers Ctrl/Cmd-P, not just the button
 window.addEventListener('beforeprint', expandForPrint);
 window.addEventListener('afterprint', restoreAfterPrint);
