@@ -78,8 +78,34 @@ confirmed and they all agree. So HRC A's and HRC B's filters put this round on
 Wed 14 Oct; the all-teams view keeps it on Mon 12 Oct, because HRC D has no
 confirmed night, and labels each list — "HRC A · Wed, 14 Oct". The calendar
 export splits the round into one entry per distinct night,
-and drops the "week commencing" caveat from the confirmed ones. Confirmed cup
-entries stay all-day: the round gives no venue, so no start time can be claimed.
+and drops the "week commencing" caveat from the confirmed ones.
+
+#### The draw
+
+A third optional map, `ties`, records who a team has been drawn against and
+whether they're at home. Three maps, all keyed by team, all optional, each
+answering one question: `lineups` who plays, `dates` when, `ties` against whom
+and where.
+
+```js
+{ date:"2026-11-09", cupType:"Divisional",
+  lineups:{ "HRC A":["Derek Balding","Sandy Nash","Paul Jones"] },
+  dates:{ "HRC A":"2026-11-11" },
+  ties:{ "HRC A":{ ha:"Home", opponent:"Grundy Park A" } } },
+```
+
+A tie makes the round concrete enough to treat as a fixture, so with that one
+team in view the row gains everything a league row has — the matchup as its
+heading, a Home/Away badge beside the cup one, the start time, and a map pin —
+and its calendar entry becomes timed and located rather than all-day. The venue
+follows the same rule as a league fixture: `ha:"Home"` means Bushby Hall,
+otherwise the opponent's club supplies the hall and the start time.
+
+Without a tie nothing changes: the round stays all-day and venue-less, because
+there is genuinely nowhere to point at yet.
+
+Across all teams the row keeps the cup heading and each line-up's label carries
+its own draw — "HRC A · home v Grundy Park A".
 
 ### What the filters then do
 
@@ -476,7 +502,8 @@ Week 1 begins Monday 14 September 2026; every week runs Monday to Sunday.
 Cup weeks are league-wide and stored once in `cupRounds`, dated on the Monday —
 the grids give cup rounds no specific night. Where a night is later confirmed
 for a team, record it in that round's `dates` map; the 12 Oct Divisional round
-carries Wed 14 Oct for both HRC A and HRC B.
+carries Wed 14 Oct for both HRC A and HRC B, and the 9 Nov round Wed 11 Nov
+for HRC A.
 
 ### HRC bye weeks
 
@@ -551,6 +578,7 @@ Line-ups still to come:
 
 - **Second halves for all four teams.** HRC C's sheet notes that 2027 fixtures
   are "to be decided nearer the time", so expect those sheets late.
-- **Cup rounds** — only two are assigned: 14 Sep (HRC C and HRC D) and 12 Oct
-  (HRC A and HRC B, both on the confirmed night of Wed 14 Oct, plus HRC D). The
-  other seven are unassigned.
+- **Cup rounds** — three are assigned: 14 Sep (HRC C and HRC D); 12 Oct (HRC A
+  and HRC B, both on the confirmed night of Wed 14 Oct, plus HRC D); and 9 Nov
+  (HRC A, Wed 11 Nov at home to Grundy Park A — the only round so far with a
+  known draw). The other six are unassigned.
